@@ -14,7 +14,7 @@ import {
   SendHorizontal,
   ChevronRight
 } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 
 import { Link } from "@/lib/router";
 import { cn } from "@/lib/utils";
