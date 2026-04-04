@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Providers from '@/components/Providers';
 import LayoutWrapper from '@/components/LayoutWrapper';
-import StoreProvider from '@/app/StoreProvider';
+import StoreProvider from './StoreProvider';
 import { AnnotatorPlugin } from '@/components/annotationPlugin';
 import { Barlow, Barlow_Condensed } from 'next/font/google';
 import { cn } from '@/lib/utils';
