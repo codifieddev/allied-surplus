@@ -1,0 +1,2400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IronForge Surplus | Military & Tactical Gear</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===========================
+   DESIGN TOKENS
+=========================== */
+:root {
+  --c-ink:       #111210;
+  --c-charcoal:  #1e1f1c;
+  --c-dark:      #252620;
+  --c-mid:       #3a3b35;
+  --c-olive:     #5a6330;
+  --c-olive-lt:  #7a8944;
+  --c-khaki:     #b8a87a;
+  --c-sand:      #d4c49a;
+  --c-cream:     #f2ede0;
+  --c-white:     #ffffff;
+  --c-red:       #b8291e;
+  --c-red-lt:    #d43a2a;
+  --c-gold:      #c9a227;
+  --c-gold-lt:   #e6b83a;
+  --font-head:   'Barlow Condensed', sans-serif;
+  --font-body:   'Barlow', sans-serif;
+  --transition:  0.25s cubic-bezier(0.4,0,0.2,1);
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.35);
+  --shadow-md:   0 6px 24px rgba(0,0,0,0.45);
+  --shadow-lg:   0 16px 48px rgba(0,0,0,0.55);
+  --radius:      3px;
+  --max-w:       1340px;
+}
+
+/* ===========================
+   RESET & BASE
+=========================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--c-ink);
+  color: var(--c-cream);
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+img { display: block; max-width: 100%; }
+button { cursor: pointer; font-family: var(--font-body); border: none; background: none; }
+input { font-family: var(--font-body); }
+
+.container {
+  width: min(var(--max-w), 100%);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ===========================
+   TOPBAR
+=========================== */
+.topbar {
+  background: var(--c-ink);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.55);
+}
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  padding: 0 24px;
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+.topbar__locations {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+.topbar__loc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.topbar__loc svg { color: var(--c-gold); flex-shrink: 0; }
+.topbar__links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.topbar__links a {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color var(--transition);
+}
+.topbar__links a:hover { color: var(--c-gold); }
+.topbar__sep { color: rgba(255,255,255,0.2); }
+
+/* ===========================
+   HEADER
+=========================== */
+.header {
+  background: var(--c-charcoal);
+  border-bottom: 2px solid var(--c-olive);
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  box-shadow: var(--shadow-md);
+}
+.header__inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 72px;
+  padding: 0 24px;
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+/* Logo */
+.header__logo {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.logo-mark {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+.logo-text { display: flex; flex-direction: column; line-height: 1; }
+.logo-text span:first-child {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--c-white);
+  text-transform: uppercase;
+}
+.logo-text span:last-child {
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  color: var(--c-gold);
+  text-transform: uppercase;
+}
+
+/* Search */
+.header__search {
+  flex: 1;
+  max-width: 520px;
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid var(--c-mid);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+.header__search:focus-within { border-color: var(--c-olive-lt); }
+.search-category {
+  background: var(--c-mid);
+  color: rgba(255,255,255,0.75);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  padding: 0 12px;
+  border: none;
+  cursor: pointer;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  white-space: nowrap;
+  transition: background var(--transition);
+}
+.search-category:hover { background: var(--c-olive); color: var(--c-white); }
+.header__search input {
+  flex: 1;
+  background: var(--c-dark);
+  border: none;
+  color: var(--c-white);
+  padding: 0 14px;
+  font-size: 14px;
+  outline: none;
+}
+.header__search input::placeholder { color: rgba(255,255,255,0.3); }
+.search-btn {
+  background: var(--c-olive);
+  color: var(--c-white);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition);
+}
+.search-btn:hover { background: var(--c-olive-lt); }
+
+/* Header actions */
+.header__actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.hdr-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  color: rgba(255,255,255,0.75);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background var(--transition), color var(--transition);
+  position: relative;
+}
+.hdr-action:hover { background: rgba(255,255,255,0.06); color: var(--c-white); }
+.hdr-action svg { flex-shrink: 0; }
+.cart-badge {
+  position: absolute;
+  top: 5px;
+  right: 8px;
+  background: var(--c-red);
+  color: var(--c-white);
+  font-size: 9px;
+  font-weight: 700;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.header__cta {
+  background: var(--c-red);
+  color: var(--c-white);
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  transition: background var(--transition), transform var(--transition);
+  white-space: nowrap;
+}
+.header__cta:hover { background: var(--c-red-lt); transform: translateY(-1px); }
+
+/* ===========================
+   NAV + MEGA MENU
+=========================== */
+.nav {
+  background: var(--c-dark);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  position: relative;
+  z-index: 800;
+}
+.nav__inner {
+  display: flex;
+  align-items: stretch;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.nav__all-cats {
+  background: var(--c-olive);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-white);
+  cursor: pointer;
+  transition: background var(--transition);
+  flex-shrink: 0;
+  border: none;
+}
+.nav__all-cats:hover { background: var(--c-olive-lt); }
+.nav__links {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  flex: 1;
+}
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+.nav-item > a {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 18px;
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.8);
+  transition: color var(--transition), background var(--transition);
+  white-space: nowrap;
+  height: 48px;
+}
+.nav-item > a:hover,
+.nav-item.active > a { color: var(--c-gold); background: rgba(255,255,255,0.04); }
+.nav-item > a.highlight { color: var(--c-red); }
+.nav-item > a.highlight:hover { color: var(--c-red-lt); }
+
+/* chevron */
+.chev {
+  width: 10px;
+  height: 10px;
+  transition: transform var(--transition);
+}
+.nav-item:hover .chev { transform: rotate(180deg); }
+
+/* mega menu */
+.mega-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--c-charcoal);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-top: 2px solid var(--c-olive);
+  box-shadow: var(--shadow-lg);
+  min-width: 680px;
+  padding: 28px 28px 24px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px 28px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: all 0.22s ease;
+  pointer-events: none;
+}
+.nav-item:hover .mega-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: all;
+}
+.mega-col-title {
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-gold);
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 10px;
+  grid-column: span 1;
+}
+.mega-link {
+  display: block;
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  padding: 4px 0;
+  transition: color var(--transition), padding-left var(--transition);
+}
+.mega-link:hover { color: var(--c-white); padding-left: 6px; }
+
+/* Sidebar cat panel */
+.cat-panel {
+  position: absolute;
+  top: calc(100% + 48px);
+  left: 0;
+  width: 260px;
+  background: var(--c-charcoal);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-top: 2px solid var(--c-olive);
+  box-shadow: var(--shadow-lg);
+  z-index: 850;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: all 0.2s ease;
+}
+.cat-panel.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.cat-panel-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  transition: background var(--transition), color var(--transition);
+  cursor: pointer;
+}
+.cat-panel-item:hover { background: rgba(255,255,255,0.06); color: var(--c-white); }
+.cat-panel-item svg { opacity: 0.4; }
+
+/* ===========================
+   ANNOUNCEMENT BAR
+=========================== */
+.announce {
+  background: var(--c-olive);
+  text-align: center;
+  padding: 10px 24px;
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+.announce-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+}
+.announce a { color: var(--c-gold-lt); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ===========================
+   HERO SLIDER
+=========================== */
+.hero {
+  position: relative;
+  overflow: hidden;
+  background: var(--c-ink);
+}
+.hero-slides { display: flex; transition: transform 0.7s cubic-bezier(0.77,0,0.175,1); }
+.hero-slide {
+  min-width: 100%;
+  position: relative;
+  height: 560px;
+  overflow: hidden;
+}
+.hero-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(10,11,8,0.85) 0%, rgba(10,11,8,0.55) 45%, rgba(10,11,8,0.15) 100%);
+}
+.hero-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 80px;
+  max-width: 700px;
+}
+.hero-tag {
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-gold);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.hero-tag::before {
+  content: '';
+  display: block;
+  width: 30px;
+  height: 2px;
+  background: var(--c-gold);
+}
+.hero-title {
+  font-family: var(--font-head);
+  font-size: clamp(42px, 6vw, 80px);
+  font-weight: 800;
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--c-white);
+  margin-bottom: 18px;
+}
+.hero-title em {
+  font-style: normal;
+  color: var(--c-gold);
+  display: block;
+}
+.hero-desc {
+  font-size: 15px;
+  color: rgba(255,255,255,0.7);
+  max-width: 400px;
+  line-height: 1.65;
+  margin-bottom: 32px;
+}
+.hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+.btn-primary {
+  background: var(--c-red);
+  color: var(--c-white);
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  border-radius: var(--radius);
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-primary:hover {
+  background: var(--c-red-lt);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(180,40,30,0.4);
+}
+.btn-outline {
+  background: transparent;
+  color: var(--c-white);
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 13px 28px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: var(--radius);
+  transition: border-color var(--transition), background var(--transition), transform var(--transition);
+}
+.btn-outline:hover {
+  border-color: var(--c-white);
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-2px);
+}
+
+/* Slider controls */
+.hero-nav {
+  position: absolute;
+  bottom: 28px;
+  left: 80px;
+  display: flex;
+  gap: 8px;
+}
+.hero-dot {
+  width: 28px;
+  height: 3px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background var(--transition), width var(--transition);
+}
+.hero-dot.active { background: var(--c-gold); width: 48px; }
+.hero-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--c-white);
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition), border-color var(--transition);
+  z-index: 10;
+}
+.hero-arrow:hover { background: var(--c-olive); border-color: var(--c-olive); }
+.hero-arrow-prev { left: 20px; }
+.hero-arrow-next { right: 20px; }
+
+/* ===========================
+   TRUST BADGES
+=========================== */
+.trust {
+  background: var(--c-dark);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.trust__inner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  divide-x: 1px solid rgba(255,255,255,0.07);
+}
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 28px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+.trust-item:last-child { border-right: none; }
+.trust-icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(90,99,48,0.2);
+  border: 1px solid rgba(90,99,48,0.4);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--c-olive-lt);
+}
+.trust-info h4 {
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-white);
+  line-height: 1.2;
+}
+.trust-info p {
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  margin-top: 2px;
+}
+
+/* ===========================
+   SECTION HEADERS
+=========================== */
+.section { padding: 72px 0; }
+.section-alt { background: var(--c-charcoal); }
+.section-dark { background: var(--c-dark); }
+
+.section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  gap: 20px;
+}
+.section-label {
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--c-gold);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.section-label::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--c-gold);
+}
+.section-title {
+  font-family: var(--font-head);
+  font-size: clamp(28px, 4vw, 46px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-white);
+  line-height: 1;
+}
+.section-title span { color: var(--c-gold); }
+.view-all {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-olive-lt);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color var(--transition), gap var(--transition);
+  white-space: nowrap;
+}
+.view-all:hover { color: var(--c-gold); gap: 10px; }
+
+/* ===========================
+   PRODUCT CARDS
+=========================== */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+.product-card {
+  background: var(--c-dark);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  position: relative;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(90,99,48,0.4);
+}
+.product-img-wrap {
+  position: relative;
+  aspect-ratio: 1;
+  background: #2a2b25;
+  overflow: hidden;
+}
+.product-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.product-card:hover .product-img-wrap img { transform: scale(1.06); }
+.product-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 2px;
+  z-index: 2;
+}
+.badge-hot { background: var(--c-red); color: var(--c-white); }
+.badge-new { background: var(--c-olive); color: var(--c-white); }
+.badge-sale { background: var(--c-gold); color: var(--c-ink); }
+.product-actions {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0;
+  transform: translateX(8px);
+  transition: opacity var(--transition), transform var(--transition);
+}
+.product-card:hover .product-actions { opacity: 1; transform: translateX(0); }
+.prod-action-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(30,31,28,0.92);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius);
+  color: var(--c-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition), border-color var(--transition);
+}
+.prod-action-btn:hover { background: var(--c-olive); border-color: var(--c-olive); }
+.product-info {
+  padding: 16px;
+}
+.product-cat {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-olive-lt);
+  margin-bottom: 6px;
+}
+.product-name {
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--c-white);
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+.product-name a:hover { color: var(--c-gold); }
+.product-stars {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 10px;
+  color: var(--c-gold);
+}
+.product-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.product-price {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--c-white);
+}
+.product-price-old {
+  font-size: 13px;
+  color: rgba(255,255,255,0.35);
+  text-decoration: line-through;
+}
+.add-to-cart-btn {
+  background: var(--c-olive);
+  color: var(--c-white);
+  font-family: var(--font-head);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  transition: background var(--transition);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.add-to-cart-btn:hover { background: var(--c-olive-lt); }
+
+/* ===========================
+   CATEGORY BANNER GRID
+=========================== */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.cat-card {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  display: block;
+}
+.cat-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.cat-card:hover img { transform: scale(1.08); }
+.cat-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(10,11,8,0.88) 100%);
+  transition: background var(--transition);
+}
+.cat-card:hover .cat-card-overlay {
+  background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(10,11,8,0.92) 100%);
+}
+.cat-card-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 22px;
+}
+.cat-card-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-gold);
+  margin-bottom: 4px;
+}
+.cat-card-title {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--c-white);
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.cat-card-link {
+  font-family: var(--font-head);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color var(--transition), gap var(--transition);
+}
+.cat-card:hover .cat-card-link { color: var(--c-gold); gap: 10px; }
+.cat-card-large {
+  grid-row: span 2;
+  aspect-ratio: unset;
+}
+
+/* ===========================
+   PROMO BANNERS
+=========================== */
+.promo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+.promo-banner {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.promo-banner img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+.promo-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(10,11,8,0.8) 0%, transparent 100%);
+  display: flex;
+  align-items: center;
+  padding: 24px 28px;
+}
+.promo-text h3 {
+  font-family: var(--font-head);
+  font-size: 24px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--c-white);
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+.promo-text p { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 14px; }
+.btn-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--c-gold);
+  color: var(--c-ink);
+  font-family: var(--font-head);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: var(--radius);
+  transition: background var(--transition), transform var(--transition);
+}
+.btn-sm:hover { background: var(--c-gold-lt); transform: translateY(-1px); }
+
+/* ===========================
+   BRANDS CAROUSEL
+=========================== */
+.brands-track-wrap {
+  overflow: hidden;
+  position: relative;
+  padding: 10px 0;
+}
+.brands-track-wrap::before,
+.brands-track-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  z-index: 2;
+  pointer-events: none;
+}
+.brands-track-wrap::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--c-charcoal), transparent);
+}
+.brands-track-wrap::after {
+  right: 0;
+  background: linear-gradient(-90deg, var(--c-charcoal), transparent);
+}
+.brands-track {
+  display: flex;
+  gap: 0;
+  animation: brandScroll 28s linear infinite;
+}
+.brands-track:hover { animation-play-state: paused; }
+@keyframes brandScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.brand-item {
+  flex-shrink: 0;
+  width: 160px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  filter: grayscale(1) brightness(0.5);
+  transition: filter var(--transition), transform var(--transition);
+}
+.brand-item:hover {
+  filter: grayscale(0) brightness(1);
+  transform: scale(1.08);
+}
+.brand-item img { max-width: 110px; max-height: 50px; object-fit: contain; }
+
+/* ===========================
+   NEWSLETTER + FOOTER
+=========================== */
+.newsletter-section {
+  background: var(--c-olive);
+  padding: 60px 0;
+  position: relative;
+  overflow: hidden;
+}
+.newsletter-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M0 60L60 0M-10 10L10-10M50 70L70 50' stroke='rgba(255,255,255,0.04)' stroke-width='1'/%3E%3C/svg%3E") repeat;
+  pointer-events: none;
+}
+.newsletter-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+.newsletter-copy .section-label { color: rgba(255,255,255,0.7); }
+.newsletter-copy .section-label::before { background: rgba(255,255,255,0.7); }
+.newsletter-copy h2 {
+  font-family: var(--font-head);
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--c-white);
+  line-height: 1;
+  margin-bottom: 14px;
+}
+.newsletter-copy p { color: rgba(255,255,255,0.7); font-size: 15px; }
+.newsletter-form { display: flex; flex-direction: column; gap: 14px; }
+.nl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.nl-field {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius);
+  padding: 13px 16px;
+  color: var(--c-white);
+  font-size: 14px;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color var(--transition);
+  width: 100%;
+}
+.nl-field::placeholder { color: rgba(255,255,255,0.4); }
+.nl-field:focus { border-color: var(--c-gold); }
+.nl-submit {
+  background: var(--c-ink);
+  color: var(--c-white);
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 14px 28px;
+  border-radius: var(--radius);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background var(--transition), transform var(--transition);
+  cursor: pointer;
+}
+.nl-submit:hover { background: var(--c-gold); color: var(--c-ink); transform: translateY(-1px); }
+.nl-disclaimer { font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.5; }
+
+/* Footer */
+.footer {
+  background: var(--c-ink);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 64px 0 0;
+}
+.footer__grid {
+  display: grid;
+  grid-template-columns: 260px 1fr 1fr 1fr;
+  gap: 48px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.footer__brand .footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  text-decoration: none;
+}
+.footer__brand p {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+.footer-socials {
+  display: flex;
+  gap: 10px;
+}
+.social-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.5);
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+.social-btn:hover { background: var(--c-olive); color: var(--c-white); border-color: var(--c-olive); }
+.footer-col-title {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-gold);
+  margin-bottom: 20px;
+}
+.footer-links { display: flex; flex-direction: column; gap: 10px; }
+.footer-links a {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: color var(--transition), gap var(--transition);
+}
+.footer-links a::before {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--c-mid);
+  transition: background var(--transition);
+}
+.footer-links a:hover { color: var(--c-white); }
+.footer-links a:hover::before { background: var(--c-olive-lt); }
+.footer-contact { display: flex; flex-direction: column; gap: 14px; }
+.footer-contact-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.footer-contact-icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(90,99,48,0.15);
+  border: 1px solid rgba(90,99,48,0.3);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-olive-lt);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.footer-contact-text h5 {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.footer-contact-text p,
+.footer-contact-text a {
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  transition: color var(--transition);
+}
+.footer-contact-text a:hover { color: var(--c-gold); }
+
+/* Footer bottom */
+.footer__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 0;
+}
+.footer-copy { font-size: 12px; color: rgba(255,255,255,0.3); }
+.footer-copy a { color: rgba(255,255,255,0.5); transition: color var(--transition); }
+.footer-copy a:hover { color: var(--c-white); }
+.footer-payments { display: flex; align-items: center; gap: 8px; }
+.payment-chip {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 3px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.5);
+}
+
+/* ===========================
+   BACK TO TOP
+=========================== */
+.back-top {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 44px;
+  height: 44px;
+  background: var(--c-olive);
+  border: none;
+  border-radius: var(--radius);
+  color: var(--c-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity var(--transition), transform var(--transition), background var(--transition);
+  z-index: 999;
+  box-shadow: var(--shadow-sm);
+}
+.back-top.show { opacity: 1; transform: translateY(0); }
+.back-top:hover { background: var(--c-olive-lt); }
+
+/* ===========================
+   CART DRAWER
+=========================== */
+.cart-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+}
+.cart-overlay.open { opacity: 1; visibility: visible; }
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  background: var(--c-charcoal);
+  z-index: 1001;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+}
+.cart-drawer.open { transform: translateX(0); }
+.cart-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.cart-drawer-header h3 {
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.close-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  color: rgba(255,255,255,0.6);
+  transition: color var(--transition), border-color var(--transition);
+}
+.close-btn:hover { color: var(--c-white); border-color: rgba(255,255,255,0.3); }
+.cart-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: rgba(255,255,255,0.3);
+}
+.cart-empty svg { opacity: 0.3; }
+.cart-empty p { font-size: 14px; }
+.cart-footer {
+  padding: 20px 24px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.cart-total span:first-child {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+}
+.cart-total span:last-child {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--c-white);
+}
+.checkout-btn {
+  width: 100%;
+  background: var(--c-red);
+  color: var(--c-white);
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 15px;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background var(--transition);
+}
+.checkout-btn:hover { background: var(--c-red-lt); }
+
+/* ===========================
+   STAR RATING SVG HELPER
+=========================== */
+.star { display: inline-block; }
+
+/* ===========================
+   TOAST NOTIFICATION
+=========================== */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--c-olive);
+  color: var(--c-white);
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 1100px) {
+  .product-grid { grid-template-columns: repeat(3, 1fr); }
+  .footer__grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 860px) {
+  .topbar__locations { display: none; }
+  .cat-grid { grid-template-columns: 1fr 1fr; }
+  .cat-card-large { grid-row: auto; }
+  .trust__inner { grid-template-columns: 1fr 1fr; }
+  .newsletter-inner { grid-template-columns: 1fr; gap: 32px; }
+  .promo-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 680px) {
+  .header__search { display: none; }
+  .product-grid { grid-template-columns: repeat(2, 1fr); }
+  .nav__links { gap: 0; overflow-x: auto; }
+  .hero-content { padding: 0 32px; }
+  .footer__grid { grid-template-columns: 1fr; }
+  .footer__bottom { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar__inner">
+    <div class="topbar__locations">
+      <div class="topbar__loc">
+        <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        Phoenix: 12450 N 35th Ave &mdash; <strong>(623) 435-2640</strong>
+      </div>
+      <div class="topbar__loc">
+        <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        Mesa: 404 E Broadway Rd &mdash; <strong>(480) 699-6675</strong>
+      </div>
+    </div>
+    <div class="topbar__links">
+      <a href="#">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        My Account
+      </a>
+      <span class="topbar__sep">|</span>
+      <a href="#">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Wishlist
+      </a>
+      <span class="topbar__sep">|</span>
+      <a href="#">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11H1l3-3M1 14l3 3M15 5l3 3-3 3M22 8H8M9 16H1l3 3M1 19l3-3"/><rect x="15" y="14" width="7" height="7" rx="1"/></svg>
+        Order Tracking
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header__inner">
+    <!-- Logo -->
+    <a href="#" class="header__logo">
+      <svg class="logo-mark" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="42" height="42" rx="3" fill="#5a6330"/>
+        <polygon points="21,6 36,34 6,34" fill="none" stroke="#c9a227" stroke-width="2"/>
+        <circle cx="21" cy="21" r="5" fill="#c9a227"/>
+        <line x1="21" y1="10" x2="21" y2="16" stroke="#c9a227" stroke-width="1.5"/>
+        <line x1="21" y1="26" x2="21" y2="34" stroke="#c9a227" stroke-width="1.5"/>
+        <line x1="8" y1="28" x2="14" y2="24" stroke="#c9a227" stroke-width="1.5"/>
+        <line x1="28" y1="24" x2="34" y2="28" stroke="#c9a227" stroke-width="1.5"/>
+      </svg>
+      <div class="logo-text">
+        <span>IronForge</span>
+        <span>Tactical Surplus</span>
+      </div>
+    </a>
+
+    <!-- Search Bar -->
+    <div class="header__search">
+      <select class="search-category" aria-label="Search category">
+        <option>All Categories</option>
+        <option>Apparel</option>
+        <option>Footwear</option>
+        <option>Tactical</option>
+        <option>Bags</option>
+        <option>Headwear</option>
+      </select>
+      <input type="text" placeholder="Search military gear, brands, products...">
+      <button class="search-btn" aria-label="Search">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
+    </div>
+
+    <!-- Actions -->
+    <div class="header__actions">
+      <a href="#" class="hdr-action">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Account</span>
+      </a>
+      <a href="#" class="hdr-action">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span>Wishlist</span>
+      </a>
+      <button class="hdr-action" id="cartToggle" aria-label="Open cart">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span>Cart</span>
+        <span class="cart-badge" id="cartCount">0</span>
+      </button>
+      <a href="tel:6234352640" class="header__cta">
+        <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+        Call Us
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav__inner">
+    <button class="nav__all-cats" id="allCatsBtn">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      Shop By Category
+      <svg class="chev" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 10 10"><path d="M2 3l3 4 3-4"/></svg>
+    </button>
+
+    <!-- Category Panel -->
+    <div class="cat-panel" id="catPanel">
+      <div class="cat-panel-item">
+        <span>Apparel &amp; Uniforms</span>
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div class="cat-panel-item">
+        <span>Footwear</span>
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div class="cat-panel-item">
+        <span>Tactical &amp; Law Enforcement</span>
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div class="cat-panel-item">
+        <span>Backpacks &amp; Bags</span>
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div class="cat-panel-item">
+        <span>Headwear</span>
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div class="cat-panel-item">
+        <span>Emergency Supplies</span>
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div class="cat-panel-item">
+        <span>Custom Dog Tags</span>
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div class="cat-panel-item">
+        <span>Gifts &amp; Novelties</span>
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div class="cat-panel-item">
+        <span>Genuine Military Surplus</span>
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>
+
+    <ul class="nav__links">
+      <!-- SALES -->
+      <li class="nav-item">
+        <a href="#" class="highlight">
+          <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          SALES
+        </a>
+      </li>
+      <!-- Apparel mega -->
+      <li class="nav-item">
+        <a href="#">
+          Apparel
+          <svg class="chev" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 10 10"><path d="M2 3l3 4 3-4"/></svg>
+        </a>
+        <div class="mega-menu">
+          <div style="grid-column:1">
+            <div class="mega-col-title">Uniforms</div>
+            <a href="#" class="mega-link">ACU's</a>
+            <a href="#" class="mega-link">BDU's</a>
+            <a href="#" class="mega-link">ABU's</a>
+            <a href="#" class="mega-link">Flight Suits</a>
+          </div>
+          <div style="grid-column:2">
+            <div class="mega-col-title">Shirts</div>
+            <a href="#" class="mega-link">Tactical Shirts</a>
+            <a href="#" class="mega-link">Short Sleeve</a>
+            <a href="#" class="mega-link">Long Sleeve</a>
+            <a href="#" class="mega-link">Grunt Style</a>
+            <a href="#" class="mega-link">Erazor Bits</a>
+          </div>
+          <div style="grid-column:3">
+            <div class="mega-col-title">Bottoms</div>
+            <a href="#" class="mega-link">Tactical Pants</a>
+            <a href="#" class="mega-link">Shorts</a>
+            <a href="#" class="mega-link">Belts</a>
+          </div>
+          <div style="grid-column:4">
+            <div class="mega-col-title">Outerwear</div>
+            <a href="#" class="mega-link">Jackets</a>
+            <a href="#" class="mega-link">MA-1 Jackets</a>
+            <a href="#" class="mega-link">Soft Shells</a>
+            <a href="#" class="mega-link">Children &amp; Infants</a>
+          </div>
+        </div>
+      </li>
+      <!-- Footwear -->
+      <li class="nav-item">
+        <a href="#">
+          Footwear
+          <svg class="chev" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 10 10"><path d="M2 3l3 4 3-4"/></svg>
+        </a>
+        <div class="mega-menu">
+          <div>
+            <div class="mega-col-title">By Type</div>
+            <a href="#" class="mega-link">Side-Zip Boots</a>
+            <a href="#" class="mega-link">Steel Toe</a>
+            <a href="#" class="mega-link">Composite Toe</a>
+            <a href="#" class="mega-link">Waterproof</a>
+            <a href="#" class="mega-link">Hot Weather</a>
+            <a href="#" class="mega-link">Berry Compliant</a>
+          </div>
+          <div>
+            <div class="mega-col-title">By Brand</div>
+            <a href="#" class="mega-link">Belleville</a>
+            <a href="#" class="mega-link">Bates</a>
+            <a href="#" class="mega-link">Reebok</a>
+            <a href="#" class="mega-link">Propper</a>
+            <a href="#" class="mega-link">Timberland</a>
+          </div>
+          <div>
+            <div class="mega-col-title">Gender</div>
+            <a href="#" class="mega-link">Men's</a>
+            <a href="#" class="mega-link">Women's</a>
+          </div>
+        </div>
+      </li>
+      <!-- Tactical -->
+      <li class="nav-item">
+        <a href="#">
+          Tactical
+          <svg class="chev" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 10 10"><path d="M2 3l3 4 3-4"/></svg>
+        </a>
+        <div class="mega-menu">
+          <div>
+            <div class="mega-col-title">Gear</div>
+            <a href="#" class="mega-link">Tactical Vests</a>
+            <a href="#" class="mega-link">Modular Pouches</a>
+            <a href="#" class="mega-link">Holsters</a>
+            <a href="#" class="mega-link">Duty Gear</a>
+          </div>
+          <div>
+            <div class="mega-col-title">Defense</div>
+            <a href="#" class="mega-link">Flashlights</a>
+            <a href="#" class="mega-link">Pepper Spray</a>
+            <a href="#" class="mega-link">Stun Guns</a>
+            <a href="#" class="mega-link">Knives &amp; Sheaths</a>
+          </div>
+          <div>
+            <div class="mega-col-title">Clothing</div>
+            <a href="#" class="mega-link">Tactical Pants</a>
+            <a href="#" class="mega-link">Gloves</a>
+            <a href="#" class="mega-link">Belts &amp; Hats</a>
+          </div>
+          <div>
+            <div class="mega-col-title">Packs</div>
+            <a href="#" class="mega-link">Backpacks</a>
+            <a href="#" class="mega-link">Duffel Bags</a>
+            <a href="#" class="mega-link">Range Bags</a>
+            <a href="#" class="mega-link">Ammo Pouches</a>
+          </div>
+        </div>
+      </li>
+      <li class="nav-item"><a href="#">Brands</a></li>
+      <li class="nav-item"><a href="#">Dog Tags</a></li>
+      <li class="nav-item"><a href="#">What's New</a></li>
+      <li class="nav-item"><a href="#">Our Blog</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="announce">
+  <span>Free Shipping on orders over $99</span>
+  <span class="announce-dot"></span>
+  <span>100% Money Back Guarantee</span>
+  <span class="announce-dot"></span>
+  <span>Custom Dog Tags — <a href="#">Shop Now</a></span>
+  <span class="announce-dot"></span>
+  <span>New Arrivals Weekly</span>
+</div>
+
+<!-- HERO SLIDER -->
+<section class="hero">
+  <div class="hero-slides" id="heroSlides">
+
+    <!-- Slide 1 -->
+    <div class="hero-slide">
+      <img src="https://alliedsurplus.com/wp-content/uploads/2019/10/WideBanner.jpg" alt="Military Surplus Gear" onerror="this.style.background='#252620';this.style.display='block'">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-tag">New Collection 2025</div>
+        <h1 class="hero-title">
+          Forged for<br>
+          <em>the Field</em>
+        </h1>
+        <p class="hero-desc">Premium military-grade tactical gear trusted by veterans, law enforcement, and outdoor professionals across the nation.</p>
+        <div class="hero-btns">
+          <a href="#" class="btn-primary">
+            Shop Now
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a href="#" class="btn-outline">View New Arrivals</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="hero-slide">
+      <img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Reebok2.jpg" alt="Tactical Footwear" onerror="this.style.background='#1e1f1c'">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-tag">Tactical Footwear</div>
+        <h1 class="hero-title">
+          Built for<br>
+          <em>Every Mission</em>
+        </h1>
+        <p class="hero-desc">Combat-tested boots and tactical footwear from Belleville, Bates, Reebok, and Propper. Berry compliant, waterproof &amp; field-ready.</p>
+        <div class="hero-btns">
+          <a href="#" class="btn-primary">Shop Footwear</a>
+          <a href="#" class="btn-outline">See All Brands</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="hero-slide">
+      <img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Dog_Tags_Small_Banner.jpg" alt="Custom Dog Tags" onerror="this.style.background='#252620'">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-tag">Personalized Gear</div>
+        <h1 class="hero-title">
+          Custom<br>
+          <em>Dog Tags</em>
+        </h1>
+        <p class="hero-desc">Authentic stainless-steel military dog tags engraved with any text. Perfect for veterans, service members, and gifts.</p>
+        <div class="hero-btns">
+          <a href="#" class="btn-primary">Customize Now</a>
+          <a href="#" class="btn-outline">Learn More</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Slider controls -->
+  <button class="hero-arrow hero-arrow-prev" id="heroPrev" aria-label="Previous slide">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <button class="hero-arrow hero-arrow-next" id="heroNext" aria-label="Next slide">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
+  <div class="hero-nav" id="heroNav">
+    <div class="hero-dot active" data-index="0"></div>
+    <div class="hero-dot" data-index="1"></div>
+    <div class="hero-dot" data-index="2"></div>
+  </div>
+</section>
+
+<!-- TRUST BADGES -->
+<section class="trust">
+  <div class="trust__inner container">
+    <div class="trust-item">
+      <div class="trust-icon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/><rect x="1" y="3" width="22" height="18" rx="2"/></svg>
+      </div>
+      <div class="trust-info">
+        <h4>Free Shipping &amp; Returns</h4>
+        <p>On all orders over $99</p>
+      </div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="trust-info">
+        <h4>Money Back Guarantee</h4>
+        <p>100% satisfaction or full refund</p>
+      </div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>
+      </div>
+      <div class="trust-info">
+        <h4>Authentic Military Grade</h4>
+        <p>Genuine surplus &amp; tactical brands</p>
+      </div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.7 12.7a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </div>
+      <div class="trust-info">
+        <h4>24/7 Online Support</h4>
+        <p>Always here when you need us</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED PRODUCTS -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-label">Top Picks</div>
+        <h2 class="section-title">Featured <span>Products</span></h2>
+      </div>
+      <a href="#" class="view-all">
+        View All
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <div class="product-grid">
+      <!-- Card 1 -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <span class="product-badge badge-hot">Hot</span>
+          <img src="https://alliedsurplus.com/wp-content/uploads/2016/09/products-propper-series-100-8-inch-side-zip-boot-waterproof-black-f45201t001_1-300x300.jpg" alt="Side-Zip Boots" loading="lazy">
+          <div class="product-actions">
+            <button class="prod-action-btn" title="Add to Wishlist">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <button class="prod-action-btn" title="Quick View">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="product-info">
+          <div class="product-cat">Footwear / Propper</div>
+          <h3 class="product-name"><a href="#">Propper Series 100 Side-Zip Boot F4520</a></h3>
+          <div class="product-stars">
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+          </div>
+          <div class="product-price-row">
+            <div>
+              <div class="product-price">$124.99</div>
+            </div>
+            <button class="add-to-cart-btn" onclick="addToCart(this, 'Side-Zip Boot')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <span class="product-badge badge-new">New</span>
+          <img src="https://alliedsurplus.com/wp-content/uploads/2026/02/Screenshot-2026-02-13-153307-300x300.png" alt="Concealed Carry Jacket" loading="lazy">
+          <div class="product-actions">
+            <button class="prod-action-btn" title="Add to Wishlist">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <button class="prod-action-btn" title="Quick View">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="product-info">
+          <div class="product-cat">Outerwear / Rothco</div>
+          <h3 class="product-name"><a href="#">Concealed Carry Soft Shell Jacket Coyote Brown</a></h3>
+          <div class="product-stars">
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+          </div>
+          <div class="product-price-row">
+            <div>
+              <div class="product-price">$145.99</div>
+            </div>
+            <button class="add-to-cart-btn" onclick="addToCart(this, 'CC Jacket')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="https://alliedsurplus.com/wp-content/uploads/2026/02/40063-D-amazon-1-300x300.jpg" alt="MOLLE Knife Sheath" loading="lazy">
+          <div class="product-actions">
+            <button class="prod-action-btn" title="Add to Wishlist">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <button class="prod-action-btn" title="Quick View">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="product-info">
+          <div class="product-cat">Tactical / Rothco</div>
+          <h3 class="product-name"><a href="#">Rothco MOLLE Knife Sheath</a></h3>
+          <div class="product-stars">
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+          </div>
+          <div class="product-price-row">
+            <div>
+              <div class="product-price">$17.99</div>
+            </div>
+            <button class="add-to-cart-btn" onclick="addToCart(this, 'MOLLE Sheath')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <span class="product-badge badge-sale">Sale</span>
+          <img src="https://alliedsurplus.com/wp-content/uploads/2026/02/10804_black-smoke-amazon-300x300.jpg" alt="Aviator Sunglasses" loading="lazy">
+          <div class="product-actions">
+            <button class="prod-action-btn" title="Add to Wishlist">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <button class="prod-action-btn" title="Quick View">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="product-info">
+          <div class="product-cat">Accessories / Rothco</div>
+          <h3 class="product-name"><a href="#">G.I. Type Aviator Sunglasses 10804</a></h3>
+          <div class="product-stars">
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            <svg class="star" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+          </div>
+          <div class="product-price-row">
+            <div>
+              <div class="product-price">$14.99</div>
+              <div class="product-price-old">$22.99</div>
+            </div>
+            <button class="add-to-cart-btn" onclick="addToCart(this, 'Aviator Sunglasses')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORY SHOWCASE -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-label">Explore</div>
+        <h2 class="section-title">Shop by <span>Category</span></h2>
+      </div>
+      <a href="#" class="view-all">All Categories <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+    </div>
+
+    <div class="cat-grid">
+      <a href="#" class="cat-card cat-card-large" style="grid-row:span 2; aspect-ratio:3/5;">
+        <img src="https://alliedsurplus.com/wp-content/uploads/2016/09/products-propper-series-100-8-inch-side-zip-boot-waterproof-black-f45201t001_1-300x300.jpg" alt="Footwear" style="object-position:center top;">
+        <div class="cat-card-overlay"></div>
+        <div class="cat-card-content">
+          <div class="cat-card-label">All Styles</div>
+          <div class="cat-card-title">Military Footwear</div>
+          <div class="cat-card-link">
+            Shop Collection
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </a>
+      <a href="#" class="cat-card">
+        <img src="https://alliedsurplus.com/wp-content/uploads/2026/02/Screenshot-2026-02-13-153307-300x300.png" alt="Outerwear">
+        <div class="cat-card-overlay"></div>
+        <div class="cat-card-content">
+          <div class="cat-card-label">New Arrivals</div>
+          <div class="cat-card-title">Tactical Outerwear</div>
+          <div class="cat-card-link">Shop Now <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </a>
+      <a href="#" class="cat-card">
+        <img src="https://alliedsurplus.com/wp-content/uploads/2026/02/40063-D-amazon-1-300x300.jpg" alt="Tactical Gear">
+        <div class="cat-card-overlay"></div>
+        <div class="cat-card-content">
+          <div class="cat-card-label">Law Enforcement</div>
+          <div class="cat-card-title">Tactical Gear</div>
+          <div class="cat-card-link">Shop Now <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Promo banners -->
+    <div class="promo-grid">
+      <div class="promo-banner">
+        <img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Dog_Tags_Small_Banner.jpg" alt="Dog Tags" style="height:200px;object-fit:cover;width:100%;">
+        <div class="promo-overlay">
+          <div class="promo-text">
+            <h3>Custom<br>Dog Tags</h3>
+            <p>Personalized stainless steel</p>
+            <a href="#" class="btn-sm">Customize <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+          </div>
+        </div>
+      </div>
+      <div class="promo-banner">
+        <img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Reebok2.jpg" alt="Reebok" style="height:200px;object-fit:cover;width:100%;">
+        <div class="promo-overlay">
+          <div class="promo-text">
+            <h3>Reebok<br>Tactical</h3>
+            <p>Professional grade footwear</p>
+            <a href="#" class="btn-sm">Shop Brand <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BRANDS CAROUSEL -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-label">Trusted Names</div>
+        <h2 class="section-title">Brands We <span>Carry</span></h2>
+      </div>
+    </div>
+  </div>
+  <div class="brands-track-wrap">
+    <div class="brands-track" id="brandsTrack">
+      <!-- First set -->
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/511_copy_1-300x84.jpg" alt="5.11 Tactical"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Belleville_3-300x101.jpg" alt="Belleville"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/condor_logo-300x66.png" alt="Condor"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2021/02/download-300x80.png" alt="Bates Footwear"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Propper-300x48.jpg" alt="Propper"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Reebok-300x66.jpg" alt="Reebok"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Rothco_Small_1.jpg" alt="Rothco"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Tru-Spec-300x143.jpg" alt="Tru Spec"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2021/02/b13c3c6c-22dc-41a8-923b-7d9e38ded008-300x162.png" alt="Grunt Style"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2021/02/timberland-logo-300x300.png" alt="Timberland"></div>
+      <!-- Duplicate for seamless loop -->
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/511_copy_1-300x84.jpg" alt="5.11 Tactical"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Belleville_3-300x101.jpg" alt="Belleville"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/condor_logo-300x66.png" alt="Condor"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2021/02/download-300x80.png" alt="Bates Footwear"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Propper-300x48.jpg" alt="Propper"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Reebok-300x66.jpg" alt="Reebok"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Rothco_Small_1.jpg" alt="Rothco"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2019/10/Tru-Spec-300x143.jpg" alt="Tru Spec"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2021/02/b13c3c6c-22dc-41a8-923b-7d9e38ded008-300x162.png" alt="Grunt Style"></div>
+      <div class="brand-item"><img src="https://alliedsurplus.com/wp-content/uploads/2021/02/timberland-logo-300x300.png" alt="Timberland"></div>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter-section">
+  <div class="container newsletter-inner">
+    <div class="newsletter-copy">
+      <div class="section-label">Stay Informed</div>
+      <h2>Join the<br>IronForge<br>Regiment</h2>
+      <p>Get exclusive access to new arrivals, tactical intel, field-tested reviews, and member-only discounts delivered straight to your inbox.</p>
+    </div>
+    <div>
+      <form class="newsletter-form" onsubmit="handleNLSubmit(event)">
+        <div class="nl-row">
+          <input type="text" class="nl-field" placeholder="First Name" required>
+          <input type="text" class="nl-field" placeholder="Last Name">
+        </div>
+        <input type="email" class="nl-field" placeholder="Your Email Address" required>
+        <button type="submit" class="nl-submit">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+          Subscribe to Newsletter
+        </button>
+        <p class="nl-disclaimer">By subscribing you agree to our Privacy Policy. We never share your data. Unsubscribe anytime.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <!-- Brand col -->
+      <div class="footer__brand">
+        <a href="#" class="footer-logo">
+          <svg width="36" height="36" viewBox="0 0 42 42" fill="none">
+            <rect width="42" height="42" rx="3" fill="#5a6330"/>
+            <polygon points="21,6 36,34 6,34" fill="none" stroke="#c9a227" stroke-width="2"/>
+            <circle cx="21" cy="21" r="5" fill="#c9a227"/>
+          </svg>
+          <div class="logo-text">
+            <span>IronForge</span>
+            <span>Tactical Surplus</span>
+          </div>
+        </a>
+        <p>America's trusted source for military surplus, tactical gear, and professional-grade equipment since 2001. Serving veterans, law enforcement, and outdoor enthusiasts nationwide.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn" aria-label="Facebook">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+          <a href="#" class="social-btn" aria-label="Instagram">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+          <a href="#" class="social-btn" aria-label="YouTube">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"/></svg>
+          </a>
+          <a href="#" class="social-btn" aria-label="X / Twitter">
+            <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Nav Col 1: Top Categories -->
+      <div>
+        <div class="footer-col-title">Top Categories</div>
+        <ul class="footer-links">
+          <li><a href="#">Apparel &amp; Uniforms</a></li>
+          <li><a href="#">Tactical Pants &amp; Shirts</a></li>
+          <li><a href="#">Military Footwear</a></li>
+          <li><a href="#">Backpacks &amp; Bags</a></li>
+          <li><a href="#">Custom Dog Tags</a></li>
+          <li><a href="#">Headwear</a></li>
+          <li><a href="#">Gifts &amp; Novelties</a></li>
+          <li><a href="#">Genuine Military Surplus</a></li>
+        </ul>
+      </div>
+
+      <!-- Nav Col 2: Quick Links -->
+      <div>
+        <div class="footer-col-title">Quick Links</div>
+        <ul class="footer-links">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Customer Service</a></li>
+          <li><a href="#">Shipping &amp; Delivery</a></li>
+          <li><a href="#">Returns &amp; Replacement</a></li>
+          <li><a href="#">Sizing Charts</a></li>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">Our Blog</a></li>
+          <li><a href="#">Affiliate Program</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div>
+        <div class="footer-col-title">Contact Us</div>
+        <div class="footer-contact">
+          <div class="footer-contact-item">
+            <div class="footer-contact-icon">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            </div>
+            <div class="footer-contact-text">
+              <h5>Phoenix Store</h5>
+              <p>12450 N. 35th Ave, Phoenix, AZ</p>
+              <a href="tel:6234352640">(623) 435-2640</a>
+            </div>
+          </div>
+          <div class="footer-contact-item">
+            <div class="footer-contact-icon">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            </div>
+            <div class="footer-contact-text">
+              <h5>Mesa Store</h5>
+              <p>404 E Broadway Rd, Mesa, AZ</p>
+              <a href="tel:4806996675">(480) 699-6675</a>
+            </div>
+          </div>
+          <div class="footer-contact-item">
+            <div class="footer-contact-icon">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div class="footer-contact-text">
+              <h5>Email</h5>
+              <a href="mailto:info@ironforgesurplus.com">info@ironforgesurplus.com</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer__bottom">
+      <p class="footer-copy">&copy; 2025 IronForge Tactical Surplus. All Rights Reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+      <div class="footer-payments">
+        <span style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:0.06em;text-transform:uppercase;margin-right:4px;">Secure Payments</span>
+        <span class="payment-chip">Visa</span>
+        <span class="payment-chip">MC</span>
+        <span class="payment-chip">Amex</span>
+        <span class="payment-chip">PayPal</span>
+        <span class="payment-chip">Discover</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-drawer-header">
+    <h3>Your Cart (<span id="cartItemCount">0</span>)</h3>
+    <button class="close-btn" onclick="closeCart()" aria-label="Close cart">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="cart-empty" id="cartEmpty">
+    <svg width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    <p>Your cart is empty.</p>
+    <a href="#" class="btn-sm" onclick="closeCart()">Start Shopping</a>
+  </div>
+  <div id="cartItems" style="flex:1;overflow-y:auto;padding:16px 24px;display:none;"></div>
+  <div class="cart-footer" id="cartFooter" style="display:none;">
+    <div class="cart-total">
+      <span>Total</span>
+      <span id="cartTotal">$0.00</span>
+    </div>
+    <button class="checkout-btn">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+      Proceed to Checkout
+    </button>
+  </div>
+</div>
+
+<!-- BACK TO TOP -->
+<button class="back-top" id="backTop" aria-label="Back to top">
+  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg>
+</button>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- VANILLA JS -->
+<script>
+/* ========== HERO SLIDER ========== */
+(function() {
+  const slides = document.getElementById('heroSlides');
+  const dots = document.querySelectorAll('.hero-dot');
+  let current = 0;
+  let timer;
+
+  function goTo(n) {
+    current = (n + 3) % 3;
+    slides.style.transform = `translateX(-${current * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+
+  function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => goTo(current + 1), 5500);
+  }
+
+  document.getElementById('heroPrev').addEventListener('click', () => { goTo(current - 1); startTimer(); });
+  document.getElementById('heroNext').addEventListener('click', () => { goTo(current + 1); startTimer(); });
+  dots.forEach(d => d.addEventListener('click', () => { goTo(+d.dataset.index); startTimer(); }));
+  startTimer();
+})();
+
+/* ========== CATEGORY PANEL ========== */
+(function() {
+  const btn = document.getElementById('allCatsBtn');
+  const panel = document.getElementById('catPanel');
+  let open = false;
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    open = !open;
+    panel.classList.toggle('open', open);
+  });
+
+  document.addEventListener('click', () => {
+    open = false;
+    panel.classList.remove('open');
+  });
+
+  panel.addEventListener('click', e => e.stopPropagation());
+})();
+
+/* ========== CART ========== */
+let cart = [];
+
+function addToCart(btn, name) {
+  cart.push({ name, price: parseFloat(btn.closest('.product-card').querySelector('.product-price').textContent.replace('$','')) });
+  updateCartUI();
+  openCart();
+  showToast('Added to cart: ' + name);
+
+  // button feedback
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Added';
+  btn.style.background = 'var(--c-gold)';
+  btn.style.color = 'var(--c-ink)';
+  setTimeout(() => {
+    btn.innerHTML = orig;
+    btn.style.background = '';
+    btn.style.color = '';
+  }, 2000);
+}
+
+function updateCartUI() {
+  const count = cart.length;
+  document.getElementById('cartCount').textContent = count;
+  document.getElementById('cartItemCount').textContent = count;
+  const total = cart.reduce((s, i) => s + i.price, 0);
+  document.getElementById('cartTotal').textContent = '$' + total.toFixed(2);
+
+  const empty = document.getElementById('cartEmpty');
+  const items = document.getElementById('cartItems');
+  const footer = document.getElementById('cartFooter');
+
+  if (count === 0) {
+    empty.style.display = 'flex';
+    items.style.display = 'none';
+    footer.style.display = 'none';
+  } else {
+    empty.style.display = 'none';
+    items.style.display = 'block';
+    footer.style.display = 'block';
+    items.innerHTML = cart.map((item, i) => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div>
+          <div style="font-family:var(--font-head);font-size:13px;font-weight:600;color:var(--c-white);margin-bottom:2px;">${item.name}</div>
+          <div style="font-size:12px;color:var(--c-olive-lt);">$${item.price.toFixed(2)}</div>
+        </div>
+        <button onclick="removeFromCart(${i})" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:3px;color:rgba(255,255,255,0.5);width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='var(--c-red)';this.style.color='white'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(255,255,255,0.5)'">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    `).join('');
+  }
+}
+
+function removeFromCart(i) {
+  cart.splice(i, 1);
+  updateCartUI();
+}
+
+function openCart() {
+  document.getElementById('cartOverlay').classList.add('open');
+  document.getElementById('cartDrawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCart() {
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.getElementById('cartDrawer').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('cartToggle').addEventListener('click', () => {
+  if (document.getElementById('cartDrawer').classList.contains('open')) closeCart();
+  else openCart();
+});
+
+/* ========== TOAST ========== */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ========== BACK TO TOP ========== */
+const backTop = document.getElementById('backTop');
+window.addEventListener('scroll', () => {
+  backTop.classList.toggle('show', window.scrollY > 400);
+});
+backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+/* ========== NEWSLETTER SUBMIT ========== */
+function handleNLSubmit(e) {
+  e.preventDefault();
+  showToast('Thanks for subscribing! Welcome to the regiment.');
+  e.target.reset();
+}
+
+/* ========== STICKY HEADER SHRINK ========== */
+(function() {
+  const header = document.querySelector('.header');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 80) {
+      header.style.boxShadow = '0 4px 32px rgba(0,0,0,0.6)';
+    } else {
+      header.style.boxShadow = '';
+    }
+  });
+})();
+</script>
+</body>
+</html>
