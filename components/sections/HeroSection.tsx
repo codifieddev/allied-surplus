@@ -38,7 +38,11 @@ const heroSlides = [
 
 const autoplayTime = 5000;
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  showToast?: (msg: string) => void;
+}
+
+export default function HeroSection({ showToast }: HeroSectionProps) {
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
