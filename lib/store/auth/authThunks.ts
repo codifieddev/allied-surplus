@@ -32,3 +32,27 @@ export const loginThunk = createAsyncThunk(
     }
   }
 );
+export const signupThunk = createAsyncThunk(
+  'auth/signup',
+  async (userData: any, { rejectWithValue }) => {
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Registration failed');
+      }
+
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'An unexpected error occurred during recruitment');
+    }
+  }
+);

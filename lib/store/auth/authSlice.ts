@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { loginThunk } from './authThunks';
+import { loginThunk, signupThunk } from './authThunks';
 
 interface User {
   userName?: string;
@@ -113,6 +113,18 @@ const authSlice = createSlice({
       }
     })
     .addCase(loginThunk.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+    })
+    .addCase(signupThunk.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    })
+    .addCase(signupThunk.fulfilled, (state) => {
+      state.isLoading = false;
+      state.error = null;
+    })
+    .addCase(signupThunk.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.payload as string;
     });

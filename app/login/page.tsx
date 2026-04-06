@@ -11,15 +11,13 @@ import {
   Lock, 
   Mail, 
   ArrowRight, 
-  ChevronRight,
   Fingerprint,
-  Zap,
   Target,
   RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -107,8 +105,8 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="placeholder:text-black text-black h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic placeholder:font-normal text-black"
-                placeholder="operator@sector.com"
+                className="!placeholder:text-black !placeholder:opacity-100 text-black h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic placeholder:font-normal"
+                placeholder="ENTER INTEL ADDRESS"
               />
             </div>
               
@@ -125,8 +123,8 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="placeholder:text-black h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic"
-                placeholder="••••••••"
+                className="!placeholder:text-black !placeholder:opacity-100 h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic"
+                placeholder="ENTER SECURE PHRASE"
               />
             </div>
 
@@ -142,6 +140,12 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
+
+          <div className="mt-8 text-center pt-8 border-t border-slate-200">
+             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                Need access? <Link href="/signup" className="text-emerald-600 hover:underline">Apply for Recruitment</Link>
+             </p>
+          </div>
 
           <div className="mt-12 flex flex-col items-center gap-4 text-center">
              <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-100 border border-slate-200 opacity-50">

@@ -4,41 +4,41 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/lib/store/store";
-import { loginThunk } from "@/lib/store/auth/authThunks";
+import { signupThunk } from "@/lib/store/auth/authThunks";
 import { toast } from "sonner";
 import { 
   ShieldCheck, 
   Lock, 
   Mail, 
   ArrowRight, 
-  ChevronRight,
-  Fingerprint,
-  Zap,
   Target,
-  RefreshCw
+  RefreshCw,
+  User,
+  Zap,
+  Fingerprint
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
 
-export default function LoginPage() {
+export default function SignupPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await dispatch(loginThunk({ email, password })).unwrap();
-      toast.success("Authentication successful. Entry permitted.");
-      router.push("/admin");
-      router.refresh();
+      await dispatch(signupThunk({ name, email, password })).unwrap();
+      toast.success("Recruitment successful. Access granted to primary terminal.");
+      router.push("/admin/login"); // Redirect to login after signup
     } catch (err: any) {
-      toast.error(err || "Access Denied: Invalid override credentials.");
+      toast.error(err || "Recruitment error: Identity could not be established.");
     } finally {
       setLoading(false);
     }
@@ -46,6 +46,14 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row bg-slate-50 relative overflow-hidden">
+      <style jsx>{`
+        input::placeholder {
+          color: black !important;
+          opacity: 1 !important;
+          font-weight: 800 !important;
+          font-style: italic !important;
+        }
+      `}</style>
       {/* Decorative Matrix Background */}
       <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none select-none overflow-hidden">
          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_#000_1px,_transparent_1px)] bg-[length:40px_40px]" />
@@ -67,13 +75,13 @@ export default function LoginPage() {
                <div className="h-10 w-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/20">
                   <Target size={22} className="text-white" />
                </div>
-               <span className="text-xl font-black text-white uppercase tracking-tighter">Allied Surplus <span className="text-emerald-500">Login</span></span>
+               <span className="text-xl font-black text-white uppercase tracking-tighter">Allied Surplus <span className="text-emerald-500">Recruit</span></span>
             </div>
             
             <div className="space-y-6 max-w-sm">
-               <h2 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">Command & <br/>Control Center</h2>
+               <h2 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">Register For <br/>The Frontline</h2>
                <p className="text-sm font-medium text-slate-400 italic leading-relaxed">
-                  Unified terminal for procurement, inventory logistics, and mission-critical e-commerce operations. Authorized personnel only.
+                  Join the IronForge Regiment. Establish your credentials to gain access to centralized logistics, inventory intelligence, and mission deployment tools.
                </p>
             </div>
          </div>
@@ -84,22 +92,36 @@ export default function LoginPage() {
          </div>
       </div>
 
-      {/* Login Side */}
+      {/* Signup Side */}
       <div className="flex-1 flex items-center justify-center p-8 relative z-10">
         <div className="max-w-md w-full">
           <div className="mb-12 text-center md:text-left">
             <div className="md:hidden flex justify-center mb-6">
                <div className="h-12 w-12 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <ShieldCheck size={28} className="text-white" />
+                  <Zap size={28} className="text-white" />
                </div>
             </div>
-            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">Gatehouse <span className="text-slate-400">Access</span></h1>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">Provide secure identification to initiate session.</p>
+            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">Registry <span className="text-slate-400">Terminal</span></h1>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">Initialize your operative profile.</p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleSignup} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-black ml-1 flex items-center gap-2 ">
+              <label className="text-[10px] font-black uppercase tracking-widest text-black ml-1 flex items-center gap-2">
+                 <User size={12} className="text-emerald-600" /> Operative Name
+              </label>
+              <Input 
+                type="text" 
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="!placeholder:text-black !placeholder:opacity-100 !placeholder:font-bold text-black h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic placeholder:font-normal"
+                placeholder="ENTER FULL NAME"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-black ml-1 flex items-center gap-2">
                  <Mail size={12} className="text-emerald-600" /> Intel Address
               </label>
               <Input 
@@ -107,26 +129,22 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="placeholder:text-black text-black h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic placeholder:font-normal text-black"
-                placeholder="operator@sector.com"
+                className="!placeholder:text-black !placeholder:opacity-100 !placeholder:font-bold text-black h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic placeholder:font-normal"
+                placeholder="ENTER INTEL ADDRESS"
               />
             </div>
-              
+            
             <div className="space-y-2">
-              <div className="flex justify-between items-center ml-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-black flex items-center gap-2">
-                   <Lock size={12} className="text-emerald-600" /> Secure Phrasing
-                </label>
-                
-                <button type="button" className="text-[9px] font-black uppercase tracking-widest text-slate-300 hover:text-emerald-600 transition-colors">Request Reset</button>
-              </div>
+              <label className="text-[10px] font-black uppercase tracking-widest text-black ml-1 flex items-center gap-2">
+                 <Lock size={12} className="text-emerald-600" /> Secure Phrasing
+              </label>
               <Input 
                 type="password" 
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="placeholder:text-black h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic"
-                placeholder="••••••••"
+                className="!placeholder:text-black !placeholder:opacity-100 !placeholder:font-bold h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic"
+                placeholder="ENTER SECURE PHRASE"
               />
             </div>
 
@@ -138,15 +156,21 @@ export default function LoginPage() {
               {loading ? (
                  <RefreshCw size={18} className="animate-spin" />
               ) : (
-                 <>Initiate Sequence <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></>
+                 <>Deploy Credentials <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></>
               )}
             </Button>
           </form>
 
+          <div className="mt-8 text-center pt-8 border-t border-slate-200">
+             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                Already registered? <Link href="/admin/login" className="text-emerald-600 hover:underline">Return to Gatehouse</Link>
+             </p>
+          </div>
+
           <div className="mt-12 flex flex-col items-center gap-4 text-center">
              <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-100 border border-slate-200 opacity-50">
                 <Fingerprint size={14} className="text-slate-400" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Biometric Verification Backup Enabled</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Secure Identity Layer Active</span>
              </div>
              <p className="text-[10px] text-slate-300 font-medium italic">Nested Matrix Environment v2.4.0</p>
           </div>

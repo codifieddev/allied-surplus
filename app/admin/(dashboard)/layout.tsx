@@ -30,7 +30,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   if (!isAuthenticated && process.env.NODE_ENV !== "development") {
-    redirect('/admin/login');
+    redirect('/login');
   }
 
   return (
