@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useAppSelector, useAppDispatch } from '../../lib/store/hooks';
-import { selectCartItems, selectCartTotal, clearCart } from '../../lib/store/features/cartSlice';
+import { useAppSelector, useAppDispatch } from '@/lib/store/hooks';
+import { selectCartItems, selectCartTotal, clearCart } from '@/lib/store/cart/cartSlice';
 import { ChevronLeft, CreditCard, Truck, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
 import { Link } from '@/lib/router';
 
@@ -22,6 +22,12 @@ const CheckoutPage = () => {
       currency: 'INR',
       maximumFractionDigits: 0
     }).format(price);
+  };
+
+  const getItemImage = (item: any) => {
+    if (item.selectedVariant?.image) return item.selectedVariant.image;
+    if (item.gallery && item.gallery.length > 0) return item.gallery[0].url;
+    return "/placeholder-product.png";
   };
 
   const handleNext = (e: React.FormEvent) => {
@@ -251,14 +257,16 @@ const CheckoutPage = () => {
             <h3 className="text-xl font-bold mb-6 tracking-tight">Summary</h3>
             <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {cart.map((item) => (
-                <div key={item.id} className="flex gap-4">
+                <div key={item.cartItemId || item._id} className="flex gap-4">
                   <div className="w-16 h-20 bg-background rounded-lg overflow-hidden border border-border flex-shrink-0">
-                    <img src={item.img} alt={item.title} className="w-full h-full object-cover" />
+                    <img src={getItemImage(item)} alt={item.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex flex-col justify-center">
-                    <p className="font-bold text-sm line-clamp-1">{item.title}</p>
+                    <p className="font-bold text-sm line-clamp-1">{item.name}</p>
                     <p className="text-xs text-muted font-bold uppercase tracking-wider">Qty: {item.quantity}</p>
-                    <p className="text-sm font-black text-secondary mt-1">{item.price}</p>
+                    <p className="text-sm font-black text-secondary mt-1">
+                      {formatPrice(Number(item.selectedVariant?.price || item.price || item.pricing?.price || 0))}
+                    </p>
                   </div>
                 </div>
               ))}

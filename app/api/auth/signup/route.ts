@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import clientPromise from "@/lib/mongodb";
+import { connectMasterDB } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password } = await req.json();
+    const { name, username, email, address, password } = await req.json();
 
     if (!name || !email || !password) {
       return NextResponse.json({ success: false, message: "All fields are required" }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db("kalp_master"); // Storing in the master database
+    const db = await connectMasterDB();
     const users = db.collection("users");
 
     // Check if user already exists
@@ -26,9 +25,11 @@ export async function POST(req: Request) {
     // Create user
     const newUser = {
       name,
+      username: username || name.toLowerCase().replace(/\s+/g, "_"),
       email,
+      address: address || "UNALLOCATED",
       password: hashedPassword,
-      role: "admin", // Defaulting to admin for this specific project context
+      role: "customer", // Defaulting to customer for this specific project context
       createdAt: new Date(),
     };
 

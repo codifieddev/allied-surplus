@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { products, categories } from '../../data/products';
 import { useAppDispatch } from '../../lib/store/hooks';
-import { addToCart } from '../../lib/store/features/cartSlice';
+import { addToCart } from '@/lib/store/cart/cartSlice';
 import { RootState } from '@/lib/store/store';
 import { useSelector } from 'react-redux';
 import { AnnotatorPlugin } from '../annotationPlugin/AnnotatorPlugin';
@@ -411,13 +411,24 @@ const CategoryPage = () => {
     <Eye size={18} />
   </button>
 
-  {/* <button
-    onClick={() => dispatch(addToCart(product))}
+  <button
+    onClick={() => {
+      const cartItem: any = {
+        ...product,
+        _id: String(product.id),
+        name: product.title,
+        quantity: 1,
+        selectedOptions: {},
+        selectedVariant: { price: product.price.replace(/[^\d.]/g, '') },
+        cartItemId: `${product.id}-default`
+      };
+      dispatch(addToCart(cartItem));
+    }}
     className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white opacity-0 shadow-lg transition-all duration-300 group-hover:opacity-100 hover:scale-110 shrink-0"
     title="Add to Cart"
   >
     <Plus size={20} />
-  </button> */}
+  </button>
 </div>
                     </div>
                     <div className="flex justify-between items-center gap-2.5 flex-wrap font-black tracking-[1px] text-foreground/75">

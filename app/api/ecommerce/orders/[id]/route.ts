@@ -31,3 +31,20 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const auth = await authenticateAdmin();
+  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const Order = await getOrderModel();
+    const order = await Order.findOne({ _id: new ObjectId(id) });
+
+    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+
+    return NextResponse.json(order);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

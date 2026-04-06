@@ -1,5 +1,10 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { loginThunk, signupThunk } from './authThunks';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  getAuthUserThunk,
+  loginThunk,
+  logoutThunk,
+  signupThunk,
+} from "./authThunks";
 
 interface User {
   userName?: string;
@@ -20,8 +25,8 @@ interface AuthState {
 
 const loadState = (): AuthState => {
   try {
-    const serializedUser = localStorage.getItem('nestCraftUser');
-    const serializedToken = localStorage.getItem('nestCraftToken');
+    const serializedUser = localStorage.getItem("nestCraftUser");
+    const serializedToken = localStorage.getItem("nestCraftToken");
     if (serializedUser === null) {
       return {
         nestCraftUser: null,
@@ -49,39 +54,32 @@ const loadState = (): AuthState => {
   }
 };
 
-const initialState: AuthState = typeof window !== 'undefined' ? loadState() : {
-  nestCraftUser: null,
-  nestCraftToken: null,
-  isAuthenticated: false,
-  isLoading: false,
-  error: null,
-};
+const initialState: AuthState =
+  typeof window !== "undefined"
+    ? loadState()
+    : {
+        nestCraftUser: null,
+        nestCraftToken: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+      };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     setCredentials: (
       state,
-      action: PayloadAction<{ user: User; token: string }>
+      action: PayloadAction<{ user: User; token: string }>,
     ) => {
       state.nestCraftUser = action.payload.user;
-      state.nestCraftToken = action.payload.token;
       state.isAuthenticated = true;
       state.error = null;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('nestCraftUser', JSON.stringify(action.payload.user));
-        localStorage.setItem('nestCraftToken', action.payload.token);
-      }
     },
     logout: (state) => {
       state.nestCraftUser = null;
-      state.nestCraftToken = null;
       state.isAuthenticated = false;
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('nestCraftUser');
-        localStorage.removeItem('nestCraftToken');
-      }
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
@@ -93,43 +91,63 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-    .addCase(loginThunk.pending, (state) => {
-      state.isLoading = true;
-      state.error = null;
-    })
-    .addCase(loginThunk.fulfilled, (state, action: any) => {
-   
-      state.nestCraftUser = action.payload.user;
-        if(action.payload.user?.role=="admin"){
-             state.isAuthenticated = true;
-        }
-  
-      state.isLoading = false;
-      state.error = null;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('nestCraftUser', JSON.stringify(action.payload.user));
-        // Note: token is not currently in the loginThunk payload, 
-        // but if it were, we would set it here as well.
-      }
-    })
-    .addCase(loginThunk.rejected, (state, action) => {
-      state.isLoading = false;
-      state.error = action.payload as string;
-    })
-    .addCase(signupThunk.pending, (state) => {
-      state.isLoading = true;
-      state.error = null;
-    })
-    .addCase(signupThunk.fulfilled, (state) => {
-      state.isLoading = false;
-      state.error = null;
-    })
-    .addCase(signupThunk.rejected, (state, action) => {
-      state.isLoading = false;
-      state.error = action.payload as string;
-    });
-  }
+      .addCase(loginThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(loginThunk.fulfilled, (state, action: any) => {
+        state.nestCraftUser = action.payload.user;
+        state.isAuthenticated = true;
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(loginThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(signupThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(signupThunk.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(signupThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(getAuthUserThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getAuthUserThunk.fulfilled, (state, action: any) => {
+        state.nestCraftUser = action.payload.user;
+        state.isAuthenticated = true;
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(getAuthUserThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(logoutThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(logoutThunk.fulfilled, (state) => {
+        state.nestCraftUser = null;
+        state.isAuthenticated = false;
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(logoutThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+  },
 });
 
-export const { setCredentials, logout, setLoading, setError } = authSlice.actions;
+export const { setCredentials, logout, setLoading, setError } =
+  authSlice.actions;
 export default authSlice.reducer;
