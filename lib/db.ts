@@ -1,17 +1,27 @@
 import { MongoClient, Db } from "mongodb";
 
-const MONGODB_URI = process.env.MONGODB_URI;
+let MONGODB_URI = process.env.MONGODB_URI;
 const TENANT_DB_NAME = process.env.TENANT_DB_NAME;
+
+if (
+  MONGODB_URI?.startsWith("mongodb+srv://") &&
+  MONGODB_URI.includes("@kalpcluster.mr8bacs.mongodb.net")
+) {
+  MONGODB_URI = MONGODB_URI.replace(
+    "@kalpcluster.mr8bacs.mongodb.net/",
+    "@ac-zxbieql-shard-00-00.mr8bacs.mongodb.net:27017,ac-zxbieql-shard-00-01.mr8bacs.mongodb.net:27017,ac-zxbieql-shard-00-02.mr8bacs.mongodb.net:27017/?ssl=true&replicaSet=atlas-vw7phq-shard-0&authSource=admin&retryWrites=true&w=majority",
+  ).replace("mongodb+srv://", "mongodb://");
+}
 
 if (!MONGODB_URI) {
   throw new Error(
-    "Please define the MONGODB_URI environment variable inside .env"
+    "Please define the MONGODB_URI environment variable inside .env",
   );
 }
 
 if (!TENANT_DB_NAME) {
   throw new Error(
-    "Please define the TENANT_DB_NAME environment variable inside .env"
+    "Please define the TENANT_DB_NAME environment variable inside .env",
   );
 }
 
@@ -27,7 +37,7 @@ export async function connectClient(): Promise<MongoClient> {
   if (!cachedClient.promise) {
     cachedClient.promise = MongoClient.connect(MONGODB_URI as string);
   }
-  
+
   try {
     cachedClient.conn = await cachedClient.promise;
   } catch (e) {

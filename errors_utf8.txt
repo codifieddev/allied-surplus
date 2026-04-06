@@ -1,0 +1,98 @@
+﻿app/admin/(dashboard)/pages/page.tsx(161,65): error TS2339: Property 'isPublished' does not exist on type 'Page'.
+app/admin/(dashboard)/pages/page.tsx(165,33): error TS2339: Property 'isPublished' does not exist on type 'Page'.
+app/admin/(dashboard)/pages/page.tsx(170,32): error TS2339: Property 'isPublished' does not exist on type 'Page'.
+app/admin/(dashboard)/pages/page.tsx(194,50): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/admin/cms/PageEditor.tsx(20,16): error TS2305: Module '"@/lib/store/pages/pageType"' has no exported member 'PageBlock'.
+components/admin/cms/PageEditor.tsx(40,5): error TS2345: Argument of type 'Page | { title: string; slug: string; content: never[]; metaTitle: string; metaDescription: string; isPublished: boolean; }' is not assignable to parameter of type 'Page | (() => Page)'.
+  Type '{ title: string; slug: string; content: never[]; metaTitle: string; metaDescription: string; isPublished: boolean; }' is not assignable to type 'Page | (() => Page)'.
+    Types of property 'content' are incompatible.
+      Type 'never[]' is not assignable to type 'string'.
+components/admin/cms/PageEditor.tsx(58,24): error TS2322: Type 'any[]' is not assignable to type 'string'.
+components/admin/cms/PageEditor.tsx(58,37): error TS2488: Type 'string | undefined' must have a '[Symbol.iterator]()' method that returns an iterator.
+components/admin/cms/PageEditor.tsx(64,16): error TS18048: 'page.content' is possibly 'undefined'.
+components/admin/cms/PageEditor.tsx(64,29): error TS2339: Property 'map' does not exist on type 'string'.
+components/admin/cms/PageEditor.tsx(64,34): error TS7006: Parameter 'sec' implicitly has an 'any' type.
+components/admin/cms/PageEditor.tsx(73,16): error TS18048: 'page.content' is possibly 'undefined'.
+components/admin/cms/PageEditor.tsx(73,29): error TS2339: Property 'filter' does not exist on type 'string'.
+components/admin/cms/PageEditor.tsx(73,37): error TS7006: Parameter 'sec' implicitly has an 'any' type.
+components/admin/cms/PageEditor.tsx(86,24): error TS2322: Type 'any[]' is not assignable to type 'string'.
+components/admin/cms/PageEditor.tsx(129,21): error TS2339: Property 'isPublished' does not exist on type 'Page'.
+components/admin/cms/PageEditor.tsx(133,29): error TS2339: Property 'isPublished' does not exist on type 'Page'.
+components/admin/cms/PageEditor.tsx(135,36): error TS2353: Object literal may only specify known properties, and 'isPublished' does not exist in type 'SetStateAction<Page>'.
+components/admin/cms/PageEditor.tsx(246,14): error TS18048: 'page.content' is possibly 'undefined'.
+components/admin/cms/PageEditor.tsx(263,18): error TS18048: 'page.content' is possibly 'undefined'.
+components/admin/cms/PageEditor.tsx(263,31): error TS2339: Property 'map' does not exist on type 'string'.
+components/admin/cms/PageEditor.tsx(263,36): error TS7006: Parameter 'section' implicitly has an 'any' type.
+components/admin/cms/PageEditor.tsx(263,45): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+components/admin/cms/PageEditor.tsx(274,37): error TS18048: 'page.content' is possibly 'undefined'.
+components/admin/cms/PageEditor.tsx(320,31): error TS2339: Property 'metaTitle' does not exist on type 'Page'.
+components/admin/cms/PageEditor.tsx(322,40): error TS2353: Object literal may only specify known properties, and 'metaTitle' does not exist in type 'SetStateAction<Page>'.
+components/admin/cms/PageEditor.tsx(333,31): error TS2339: Property 'metaDescription' does not exist on type 'Page'.
+components/admin/cms/PageEditor.tsx(335,40): error TS2353: Object literal may only specify known properties, and 'metaDescription' does not exist in type 'SetStateAction<Page>'.
+components/admin/media/MediaManage.tsx(4,41): error TS2307: Cannot find module 'framer-motion' or its corresponding type declarations.
+components/admin/media/MediaManage.tsx(238,34): error TS7006: Parameter 'e' implicitly has an 'any' type.
+components/admin/media/MediaManage.tsx(417,27): error TS7006: Parameter 'e' implicitly has an 'any' type.
+components/admin/products/studio/VisualMedia.tsx(137,9): error TS2322: Type '(url: string) => void' is not assignable to type '(media: { url: string; alt: string; }) => void'.
+  Types of parameters 'url' and 'media' are incompatible.
+    Type '{ url: string; alt: string; }' is not assignable to type 'string'.
+components/pages/CartPage.tsx(11,31): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(selector: (state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => CartItem[], equalityFn?: EqualityFn<...> | undefined): CartItem[]', gave the following error.
+    Argument of type '(state: { cart: CartState; }) => CartItem[]' is not assignable to parameter of type '(state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => CartItem[]'.
+      Types of parameters 'state' and 'state' are incompatible.
+        Type '{ auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }' is not assignable to type '{ cart: CartState; }'.
+          The types of 'cart.items' are incompatible between these types.
+            Type 'import("D:/projects/allied-surplus/lib/store/cart/cartSlice").CartItem[]' is not assignable to type 'import("D:/projects/allied-surplus/lib/store/features/cartSlice").CartItem[]'.
+              Type 'CartItem' is missing the following properties from type 'CartItem': id, title, category, rating, and 3 more.
+  Overload 2 of 2, '(selector: (state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => CartItem[], options?: UseSelectorOptions<...> | undefined): CartItem[]', gave the following error.
+    Argument of type '(state: { cart: CartState; }) => CartItem[]' is not assignable to parameter of type '(state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => CartItem[]'.
+      Types of parameters 'state' and 'state' are incompatible.
+        Type '{ auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }' is not assignable to type '{ cart: CartState; }'.
+          The types of 'cart.items' are incompatible between these types.
+            Type 'import("D:/projects/allied-surplus/lib/store/cart/cartSlice").CartItem[]' is not assignable to type 'import("D:/projects/allied-surplus/lib/store/features/cartSlice").CartItem[]'.
+              Type 'CartItem' is missing the following properties from type 'CartItem': id, title, category, rating, and 3 more.
+components/pages/CartPage.tsx(12,36): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(selector: (state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => number, equalityFn?: EqualityFn<...> | undefined): number', gave the following error.
+    Argument of type '(state: { cart: CartState; }) => number' is not assignable to parameter of type '(state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => number'.
+      Types of parameters 'state' and 'state' are incompatible.
+        Type '{ auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }' is not assignable to type '{ cart: CartState; }'.
+          The types of 'cart.items' are incompatible between these types.
+            Type 'import("D:/projects/allied-surplus/lib/store/cart/cartSlice").CartItem[]' is not assignable to type 'import("D:/projects/allied-surplus/lib/store/features/cartSlice").CartItem[]'.
+              Type 'CartItem' is missing the following properties from type 'CartItem': id, title, category, rating, and 3 more.
+  Overload 2 of 2, '(selector: (state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => number, options?: UseSelectorOptions<...> | undefined): number', gave the following error.
+    Argument of type '(state: { cart: CartState; }) => number' is not assignable to parameter of type '(state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => number'.
+      Types of parameters 'state' and 'state' are incompatible.
+        Type '{ auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }' is not assignable to type '{ cart: CartState; }'.
+          The types of 'cart.items' are incompatible between these types.
+            Type 'import("D:/projects/allied-surplus/lib/store/cart/cartSlice").CartItem[]' is not assignable to type 'import("D:/projects/allied-surplus/lib/store/features/cartSlice").CartItem[]'.
+              Type 'CartItem' is missing the following properties from type 'CartItem': id, title, category, rating, and 3 more.
+components/pages/CheckoutPage.tsx(11,31): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(selector: (state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => CartItem[], equalityFn?: EqualityFn<...> | undefined): CartItem[]', gave the following error.
+    Argument of type '(state: { cart: CartState; }) => CartItem[]' is not assignable to parameter of type '(state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => CartItem[]'.
+      Types of parameters 'state' and 'state' are incompatible.
+        Type '{ auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }' is not assignable to type '{ cart: CartState; }'.
+          The types of 'cart.items' are incompatible between these types.
+            Type 'import("D:/projects/allied-surplus/lib/store/cart/cartSlice").CartItem[]' is not assignable to type 'import("D:/projects/allied-surplus/lib/store/features/cartSlice").CartItem[]'.
+              Type 'CartItem' is missing the following properties from type 'CartItem': id, title, category, rating, and 3 more.
+  Overload 2 of 2, '(selector: (state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => CartItem[], options?: UseSelectorOptions<...> | undefined): CartItem[]', gave the following error.
+    Argument of type '(state: { cart: CartState; }) => CartItem[]' is not assignable to parameter of type '(state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => CartItem[]'.
+      Types of parameters 'state' and 'state' are incompatible.
+        Type '{ auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }' is not assignable to type '{ cart: CartState; }'.
+          The types of 'cart.items' are incompatible between these types.
+            Type 'import("D:/projects/allied-surplus/lib/store/cart/cartSlice").CartItem[]' is not assignable to type 'import("D:/projects/allied-surplus/lib/store/features/cartSlice").CartItem[]'.
+              Type 'CartItem' is missing the following properties from type 'CartItem': id, title, category, rating, and 3 more.
+components/pages/CheckoutPage.tsx(12,36): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(selector: (state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => number, equalityFn?: EqualityFn<...> | undefined): number', gave the following error.
+    Argument of type '(state: { cart: CartState; }) => number' is not assignable to parameter of type '(state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => number'.
+      Types of parameters 'state' and 'state' are incompatible.
+        Type '{ auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }' is not assignable to type '{ cart: CartState; }'.
+          The types of 'cart.items' are incompatible between these types.
+            Type 'import("D:/projects/allied-surplus/lib/store/cart/cartSlice").CartItem[]' is not assignable to type 'import("D:/projects/allied-surplus/lib/store/features/cartSlice").CartItem[]'.
+              Type 'CartItem' is missing the following properties from type 'CartItem': id, title, category, rating, and 3 more.
+  Overload 2 of 2, '(selector: (state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => number, options?: UseSelectorOptions<...> | undefined): number', gave the following error.
+    Argument of type '(state: { cart: CartState; }) => number' is not assignable to parameter of type '(state: { auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }) => number'.
+      Types of parameters 'state' and 'state' are incompatible.
+        Type '{ auth: AuthState; pages: PageState; comments: CommentState; cart: CartState; adminProducts: ProductsState; adminCategories: CategoryState; adminAttributes: AttributeState; adminVariants: AdminVariantsState; adminOrders: AdminOrdersState; }' is not assignable to type '{ cart: CartState; }'.
+          The types of 'cart.items' are incompatible between these types.
+            Type 'import("D:/projects/allied-surplus/lib/store/cart/cartSlice").CartItem[]' is not assignable to type 'import("D:/projects/allied-surplus/lib/store/features/cartSlice").CartItem[]'.
+              Type 'CartItem' is missing the following properties from type 'CartItem': id, title, category, rating, and 3 more.

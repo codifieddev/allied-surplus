@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useAppSelector, useAppDispatch } from '../../lib/store/hooks';
-import { selectCartItems, selectCartTotal, removeFromCart, updateQuantity } from '../../lib/store/features/cartSlice';
+import { useAppSelector, useAppDispatch } from '@/lib/store/hooks';
+import { selectCartItems, selectCartTotal, removeFromCart, updateQuantity } from '@/lib/store/cart/cartSlice';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, ChevronLeft } from 'lucide-react';
 import { Link } from '@/lib/router';
 
@@ -18,6 +18,12 @@ const CartPage = () => {
       currency: 'INR',
       maximumFractionDigits: 0
     }).format(price);
+  };
+
+  const getItemImage = (item: any) => {
+    if (item.selectedVariant?.image) return item.selectedVariant.image;
+    if (item.gallery && item.gallery.length > 0) return item.gallery[0].url;
+    return "/placeholder-product.png";
   };
 
   if (cart.length === 0) {
@@ -61,7 +67,7 @@ const CartPage = () => {
           <AnimatePresence mode="popLayout">
             {cart.map((item) => (
               <motion.div 
-                key={item.id}
+                key={item.cartItemId || item._id}
                 layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -69,37 +75,41 @@ const CartPage = () => {
                 className="flex gap-6 pb-8 border-b border-border group"
               >
                 <div className="w-32 h-40 bg-surface rounded-2xl overflow-hidden border border-border flex-shrink-0">
-                  <img src={item.img} alt={item.title} className="w-full h-full object-cover" />
+                  <img src={getItemImage(item)} alt={item.name} className="w-full h-full object-cover" />
                 </div>
                 
                 <div className="flex-grow flex flex-col justify-between py-1">
                   <div>
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-xl font-bold tracking-tight group-hover:text-secondary transition-colors">
-                        <Link href={`/product/${item.id}`}>{item.title}</Link>
+                        <Link href={`/product/${item._id}`}>{item.name}</Link>
                       </h3>
                       <button 
-                        onClick={() => dispatch(removeFromCart(item.id))}
+                        onClick={() => item.cartItemId && dispatch(removeFromCart(item.cartItemId))}
                         className="text-muted hover:text-red-500 transition-colors p-1"
                       >
                         <Trash2 size={18} />
                       </button>
                     </div>
-                    <p className="text-sm text-muted font-bold uppercase tracking-wider mb-4">{item.category}</p>
-                    <p className="text-lg font-black text-secondary">{item.price}</p>
+                    <p className="text-sm text-muted font-bold uppercase tracking-wider mb-4">
+                      {item.selectedVariant?.title || "Standard Edition"}
+                    </p>
+                    <p className="text-lg font-black text-secondary">
+                      {formatPrice(Number(item.selectedVariant?.price || item.price || item.pricing?.price || 0))}
+                    </p>
                   </div>
 
                   <div className="flex items-center gap-6">
                     <div className="flex items-center border border-border rounded-full h-10 px-2 bg-surface">
                       <button 
-                        onClick={() => dispatch(updateQuantity({ productId: item.id, quantity: item.quantity - 1 }))}
+                        onClick={() => item.cartItemId && dispatch(updateQuantity({ cartItemId: item.cartItemId, quantity: item.quantity - 1 }))}
                         className="w-8 h-8 flex items-center justify-center hover:text-secondary transition-colors"
                       >
                         <Minus size={14} />
                       </button>
                       <span className="w-10 text-center font-bold text-sm">{item.quantity}</span>
                       <button 
-                        onClick={() => dispatch(updateQuantity({ productId: item.id, quantity: item.quantity + 1 }))}
+                        onClick={() => item.cartItemId && dispatch(updateQuantity({ cartItemId: item.cartItemId, quantity: item.quantity + 1 }))}
                         className="w-8 h-8 flex items-center justify-center hover:text-secondary transition-colors"
                       >
                         <Plus size={14} />

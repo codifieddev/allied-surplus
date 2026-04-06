@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { products, categories } from '../../data/products';
 import { useAppDispatch } from '../../lib/store/hooks';
-import { addToCart } from '../../lib/store/features/cartSlice';
+import { addToCart } from '@/lib/store/cart/cartSlice';
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -67,7 +67,16 @@ const ProductDetailPage = () => {
   };
 
   const handleAddToCart = () => {
-    dispatch(addToCart(product));
+    const cartItem: any = {
+      ...product,
+      _id: String(product.id),
+      name: product.title,
+      quantity,
+      selectedOptions: {},
+      selectedVariant: { price: product.price.replace(/[^\d.]/g, '') },
+      cartItemId: `${product.id}-default`
+    };
+    dispatch(addToCart(cartItem));
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };

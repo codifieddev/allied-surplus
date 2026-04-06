@@ -1,72 +1,63 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { 
-  ListFilter, 
-  Plus, 
-  Pencil, 
-  Trash2, 
-  Save, 
-  X, 
-  Circle, 
-  CheckCircle2,
-  Tag,
-  Settings,
-  MoreVertical,
-  ChevronRight,
-  Database,
+import { useEffect, useMemo, useState, Suspense } from "react";
+import {
+  ListFilter,
+  Plus,
+  Edit,
+  Trash,
   Search,
-  ArrowUpRight,
-  Rows,
-  HelpCircle,
-  Component,
-  Layers,
-  Activity,
-  Boxes,
-  Target,
+  Save,
+  X,
+  Circle,
+  CheckCircle2,
+  Upload,
+  Database,
+  Terminal,
   Zap,
-  Cpu,
-  ShieldCheck,
-  Terminal
+  Layers,
+  Settings,
+  Type,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { RootState } from "@/lib/store/store";
+import {
+  createAttributeSet,
+  deleteAttributeSet,
+  updateAttributeSet,
+  fetchAttributes,
+  bulkImportAttributes,
+} from "@/lib/store/attributes/attributesThunk";
+import { TacticalImportModal } from "@/components/admin/TacticalImportModal";
+
+const attributeSampleData = [
+  {
+    name: "VEHICLE SPECS",
+    key: "vehicle-specs",
+    description: "Technical specifications for off-road vehicles.",
+    attributes: [
+      {
+        key: "engine",
+        label: "Engine Type",
+        type: "select",
+        options: ["V6", "V8", "Turbo Diesel"],
+      },
+      {
+        key: "armor",
+        label: "Armor Level",
+        type: "select",
+        options: ["None", "Level 1", "Level 2"],
+      },
+    ],
+  },
+];
 import { toast } from "sonner";
-import { AnimatePresence, motion } from "motion/react";
-
-type AttributeFieldDraft = {
-  key: string;
-  label: string;
-  type: string;
-  options: string;
-  enabled: boolean;
-};
-
-type AttributeSetDraft = {
-  name: string;
-  key: string;
-  appliesTo: string;
-  contexts: string;
-  description: string;
-  attributes: AttributeFieldDraft[];
-};
-
-type AttributeSetRecord = {
-  _id: string;
-  name: string;
-  key?: string;
-  appliesTo?: string;
-  contexts?: string[];
-  description?: string;
-  attributes?: Array<{
-    key?: string;
-    label?: string;
-    type?: string;
-    options?: string[];
-    enabled?: boolean;
-  }>;
-};
+import {
+  AttributeFieldDraft,
+  AttributeSetDraft,
+  AttributeSetRecord,
+} from "@/lib/store/attributes/attributeSlices";
 
 function createEmptyField(): AttributeFieldDraft {
   return {
@@ -96,48 +87,67 @@ function fromRecord(record: AttributeSetRecord): AttributeSetDraft {
     appliesTo: record.appliesTo || "product",
     contexts: Array.isArray(record.contexts) ? record.contexts.join(", ") : "",
     description: record.description || "",
-    attributes: Array.isArray(record.attributes) && record.attributes.length > 0
-      ? record.attributes.map((attribute) => ({
-          key: attribute.key || "",
-          label: attribute.label || "",
-          type: attribute.type || "select",
-          options: Array.isArray(attribute.options) ? attribute.options.join(", ") : "",
-          enabled: attribute.enabled !== false,
-        }))
-      : [createEmptyField()],
+    attributes:
+      Array.isArray(record.attributes) && record.attributes.length > 0
+        ? record.attributes.map((attribute) => ({
+            key: attribute.key || "",
+            label: attribute.label || "",
+            type: attribute.type || "select",
+            options: Array.isArray(attribute.options)
+              ? attribute.options.join(", ")
+              : "",
+            enabled: attribute.enabled !== false,
+          }))
+        : [createEmptyField()],
   };
 }
 
-export default function AttributesPage() {
-  const [loading, setLoading] = useState(true);
+function toPayload(draft: AttributeSetDraft) {
+  return {
+    name: draft.name.trim(),
+    key: draft.key.trim(),
+    appliesTo: draft.appliesTo,
+    contexts: draft.contexts
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean),
+    description: draft.description.trim(),
+    attributes: draft.attributes
+      .map((attribute) => ({
+        key: attribute.key.trim(),
+        label: attribute.label.trim(),
+        type: attribute.type || "select",
+        options: attribute.options
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+        enabled: attribute.enabled,
+      }))
+      .filter((attribute) => attribute.key && attribute.label),
+  };
+}
+
+function AttributesPageContent() {
+  const { allattributes: records, attributeLoading: loading } = useAppSelector(
+    (state: RootState) => state.adminAttributes,
+  );
+
+  const dispatch = useAppDispatch();
   const [saving, setSaving] = useState(false);
-  const [records, setRecords] = useState<AttributeSetRecord[]>([]);
   const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<AttributeSetDraft>(createEmptyDraft());
-
-  async function fetchRecords() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/ecommerce/attributes");
-      if (res.ok) {
-        const data = await res.json();
-        setRecords(Array.isArray(data) ? data : []);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchRecords();
-  }, []);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const filtered = useMemo(() => {
     const keyword = search.toLowerCase().trim();
     if (!keyword) return records;
-    return records.filter((r) => r.name.toLowerCase().includes(keyword) || r.key?.toLowerCase().includes(keyword));
+    return records.filter(
+      (r) =>
+        r.name.toLowerCase().includes(keyword) ||
+        r.key?.toLowerCase().includes(keyword),
+    );
   }, [records, search]);
 
   const resetForm = () => {
@@ -146,278 +156,462 @@ export default function AttributesPage() {
     setShowForm(false);
   };
 
+  const handleImport = async (data: any[]) => {
+    const resultAction = await dispatch(bulkImportAttributes(data));
+    if (bulkImportAttributes.fulfilled.match(resultAction)) {
+      // dispatch(fetchAttributes());
+      return { message: `${data.length} ATTRIBUTE SETS SYNCHRONIZED` };
+    } else {
+      throw new Error(
+        (resultAction.payload as any)?.message || "Import failed",
+      );
+    }
+  };
+
   const handleEdit = (record: AttributeSetRecord) => {
     setForm(fromRecord(record));
     setEditingId(record._id);
     setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSave = async () => {
-    const payload = {
-      name: form.name.trim(),
-      key: form.key.trim(),
-      appliesTo: form.appliesTo,
-      contexts: form.contexts.split(",").map(i => i.trim()).filter(Boolean),
-      description: form.description.trim(),
-      attributes: form.attributes.map(a => ({
-        key: a.key.trim(),
-        label: a.label.trim(),
-        type: a.type || "select",
-        options: a.options.split(",").map(i => i.trim()).filter(Boolean),
-        enabled: a.enabled,
-      })).filter(a => a.key && a.label),
-    };
-
+    const payload = toPayload(form);
     if (!payload.name || payload.attributes.length === 0) {
-      toast.error("Name and at least one attribute are required.");
+      toast.error(
+        "IDENTIFICATION ERROR: Designation and Matrix Fields required.",
+      );
       return;
     }
 
     setSaving(true);
-    const endpoint = editingId ? `/api/ecommerce/attributes/${editingId}` : "/api/ecommerce/attributes";
-    const method = editingId ? "PUT" : "POST";
-
-    const res = await fetch(endpoint, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    setSaving(false);
-    if (res.ok) {
-      toast.success(editingId ? "Attribute set synchronized." : "New attribute hub established.");
+    const tId = toast.loading("SYNCHRONIZING ATTRIBUTE MATRIX...");
+    try {
+      if (editingId) {
+        await dispatch(updateAttributeSet({ id: editingId, payload })).unwrap();
+        toast.success("MATRIX UPDATED", { id: tId });
+      } else {
+        await dispatch(createAttributeSet(payload)).unwrap();
+        toast.success("SET DEPLOYED", { id: tId });
+      }
       resetForm();
-      fetchRecords();
-    } else {
-      const data = await res.json();
-      toast.error(data?.error || "Command failed: transmission error.");
+      dispatch(fetchAttributes());
+    } catch (err: any) {
+      toast.error("DEPLOYMENT FAILURE", { id: tId });
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDelete = async (record: AttributeSetRecord) => {
-    if (!confirm(`Relinquish attribute set "${record.name}"?`)) return;
-    const res = await fetch(`/api/ecommerce/attributes/${record._id}`, { method: "DELETE" });
-    if (res.ok) {
-      toast.success("Record purged from main matrix.");
-      fetchRecords();
-    } else {
-      toast.error("Failed to delete attribute set.");
+    if (!confirm(`CONFIRM DESTRUCTION: Delete attribute set "${record.name}"?`))
+      return;
+    const tId = toast.loading("PURGING MATRIX...");
+    try {
+      await dispatch(deleteAttributeSet(record._id)).unwrap();
+      toast.success("MATRIX PURGED", { id: tId });
+      dispatch(fetchAttributes());
+    } catch (err: any) {
+      toast.error("PURGE FAILURE", { id: tId });
     }
   };
 
-  const updateAttribute = (index: number, patch: Partial<AttributeFieldDraft>) => {
-    setForm(prev => ({
+  const updateAttributeField = (
+    index: number,
+    patch: Partial<AttributeFieldDraft>,
+  ) => {
+    setForm((prev) => ({
       ...prev,
-      attributes: prev.attributes.map((a, i) => i === index ? { ...a, ...patch } : a),
+      attributes: prev.attributes.map((a, i) =>
+        i === index ? { ...a, ...patch } : a,
+      ),
     }));
   };
 
-  const removeAttribute = (index: number) => {
-    setForm(prev => ({
+  const removeAttributeField = (index: number) => {
+    setForm((prev) => ({
       ...prev,
       attributes: prev.attributes.filter((_, i) => i !== index),
     }));
   };
 
   return (
-    <div className="flex flex-col space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
-      {/* Header Section */}
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Tactical Header */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 border-b border-white/5 pb-8">
         <div className="space-y-2">
-           <h1 className="text-4xl font-head font-black text-white uppercase tracking-tighter leading-none">Attribute</h1>
-           <p className="text-sm text-white/40 font-medium italic flex items-center gap-2 uppercase tracking-widest text-[10px]">
-              <Target size={12} className="text-gold" /> Synchronizing tactical variant schemas and field configurations.
-           </p>
+          <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">
+            Attribute <span className="text-gold">Intelligence</span>
+          </h1>
+          <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.3em] italic flex items-center gap-2">
+            <Layers size={12} className="text-gold" /> Component-level attribute
+            sets for product variant generation.
+          </p>
         </div>
         <div className="flex items-center gap-4">
-           <button className="h-12 px-8 bg-white/5 border border-white/10 text-white/40 font-head font-bold text-xs uppercase tracking-widest rounded-sm hover:text-white hover:border-gold/30 transition-all flex items-center gap-2 group italic">
-              <Database size={16} className="group-hover:-translate-y-0.5 transition-transform" /> Asset Library
-           </button>
-           <button onClick={() => { setForm(createEmptyDraft()); setEditingId(null); setShowForm(true); }} className="h-12 px-10 bg-olive text-white hover:bg-olive-lt font-head font-bold text-xs uppercase tracking-widest rounded-sm transition-all active:scale-95 flex items-center gap-3 shadow-2xl shadow-olive/20">
-              <Plus size={18} /> Establish Set
-           </button>
+          <button
+            className="h-12 px-6 bg-charcoal border border-white/10 text-white/40 font-black text-[10px] uppercase tracking-widest hover:text-white transition-all flex items-center gap-3"
+            onClick={() => setShowImportModal(true)}
+          >
+            <Upload size={16} /> Bulk Manifest
+          </button>
+          <button
+            className="h-12 px-10 bg-olive text-white hover:bg-olive-lt font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center gap-3 shadow-2xl shadow-olive/20"
+            onClick={() => {
+              setForm(createEmptyDraft());
+              setEditingId(null);
+              setShowForm(true);
+            }}
+          >
+            <Plus size={18} /> Deploy New Set
+          </button>
         </div>
       </div>
 
-      {/* Toolbar Section */}
-      <div className="flex flex-col lg:flex-row items-center gap-6 bg-charcoal p-5 rounded-sm border border-white/5 shadow-2xl shadow-black/60">
-         <div className="flex bg-ink p-1 rounded-sm border border-white/10 gap-1 overflow-x-auto scrollbar-none w-full lg:w-auto">
-            {["Sector All", "Active Hubs", "Dormant Node", "Archive Map"].map((status) => (
-              <button key={status} className={cn(
-                "px-8 py-2.5 rounded-sm font-head font-bold text-[10px] uppercase tracking-[0.2em] transition-all italic whitespace-nowrap",
-                status === "Sector All" ? "bg-olive text-white shadow-xl shadow-olive/10" : "text-white/20 hover:text-white hover:bg-white/5"
-              )}>
-                {status}
+      {/* Editor Form */}
+      {showForm && (
+        <div className="bg-charcoal border-l-4 border-gold p-8 space-y-8 shadow-2xl shadow-black/60 animate-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 bg-ink border border-gold/20 flex items-center justify-center text-gold">
+                <Settings size={20} />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-white uppercase tracking-widest">
+                  {editingId
+                    ? "Modify Attribute Logic"
+                    : "Configure New Matrix Set"}
+                </h3>
+                <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest italic mt-1">
+                  Define data fields and synchronization contexts.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={resetForm}
+              className="h-10 w-10 bg-ink border border-white/5 text-white/20 hover:text-white transition-all flex items-center justify-center"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+                Set Designation
+              </label>
+              <input
+                placeholder="e.g. VEHICLE SPECS"
+                value={form.name}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, name: e.target.value }))
+                }
+                className="w-full h-12 bg-ink border border-white/10 rounded-sm px-4 text-xs font-black text-white uppercase tracking-widest focus:border-gold outline-none"
+              />
+            </div>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+                Serial Key
+              </label>
+              <input
+                placeholder="vehicle-specs"
+                value={form.key}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    key: e.target.value
+                      .toLowerCase()
+                      .replace(/[^a-z0-9-]/g, "-"),
+                  }))
+                }
+                className="w-full h-12 bg-ink border border-white/10 rounded-sm px-4 text-xs font-mono font-bold text-gold lowercase tracking-widest focus:border-gold outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+                Operational Description
+              </label>
+              <textarea
+                value={form.description}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, description: e.target.value }))
+                }
+                placeholder="DESCRIBE SET PURPOSE..."
+                className="w-full h-24 bg-ink border border-white/10 rounded-sm p-4 text-xs font-bold text-white uppercase tracking-widest focus:border-gold outline-none resize-none"
+              />
+            </div>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+                Network Contexts (CSV)
+              </label>
+              <textarea
+                value={form.contexts}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, contexts: e.target.value }))
+                }
+                placeholder="e.g. automotive, gear, outdoor"
+                className="w-full h-24 bg-ink border border-white/10 rounded-sm p-4 text-xs font-bold text-white uppercase tracking-widest focus:border-gold outline-none resize-none"
+              />
+            </div>
+          </div>
+
+          {/* Attribute Fields */}
+          <div className="space-y-6 pt-6 border-t border-white/5">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+                <Zap size={14} className="text-gold" /> Matrix Fields
+              </h4>
+              <button
+                onClick={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    attributes: [...prev.attributes, createEmptyField()],
+                  }))
+                }
+                className="px-4 py-2 bg-charcoal border border-white/10 text-gold text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
+              >
+                <Plus size={14} /> Add Data Field
               </button>
-            ))}
-         </div>
-         <div className="relative flex-1 group w-full">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-gold transition-colors" size={18} />
-            <input 
-               placeholder="IDENTIFY SPECIFIC ATTRIBUTE SCHEMAS..." 
-               value={search}
-               onChange={(e) => setSearch(e.target.value)}
-               className="w-full h-12 pl-12 pr-4 bg-ink border border-white/10 rounded-sm text-xs font-bold uppercase tracking-widest text-white placeholder:text-white/20 focus:border-gold outline-none transition-all"
-            />
-         </div>
-      </div>
-
-      <div className="w-full">
-         {loading ? (
-            <div className="py-40 flex flex-col items-center justify-center gap-4 text-white/10 bg-charcoal rounded-sm border border-white/5 shadow-2xl">
-               <div className="h-10 w-10 border-2 border-white/10 border-t-gold rounded-full animate-spin shadow-lg shadow-gold/20" />
-               <span className="font-head font-black text-xs uppercase tracking-[0.4em] italic animate-pulse">Interrogating Attribute Matrix...</span>
             </div>
-         ) : filtered.length === 0 ? (
-            <div className="py-60 flex flex-col items-center justify-center gap-8 text-white/10 bg-charcoal rounded-sm border border-white/5 border-dashed shadow-inner">
-               <div className="h-24 w-24 rounded-full border border-white/5 flex items-center justify-center bg-white/[0.02] shadow-inner">
-                  <Boxes size={48} strokeWidth={1} className="opacity-40" />
-               </div>
-               <div className="text-center space-y-2">
-                 <h3 className="font-head font-black text-xl text-white uppercase tracking-tighter italic">Asset Schema Offline</h3>
-                 <p className="text-[10px] font-bold text-white/30 max-w-xs px-10 italic uppercase tracking-widest leading-relaxed">No attribute field sets identified in the current sector.</p>
-               </div>
-            </div>
-         ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-10 animate-in slide-in-from-bottom-4 duration-700">
-               {filtered.map((record) => (
-                 <motion.article 
-                   key={record._id} 
-                   layout
-                   initial={{ opacity: 0, scale: 0.95 }}
-                   animate={{ opacity: 1, scale: 1 }}
-                   className="group relative bg-charcoal border border-white/5 p-10 rounded-sm shadow-2xl shadow-black/80 hover:border-gold/30 transition-all duration-500 overflow-hidden"
-                 >
-                    {/* Background Accent */}
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gold/5 -rotate-45 translate-x-12 -translate-y-12 transition-transform group-hover:scale-150 duration-700" />
-                    
-                    <div className="relative z-10 flex justify-between items-start mb-8">
-                       <div className="flex items-center gap-5">
-                          <div className="h-14 w-14 flex items-center justify-center rounded-sm bg-olive/10 border border-olive/30 group-hover:bg-olive group-hover:text-white transition-all duration-500 ring-1 ring-gold/0 group-hover:ring-gold/20 shadow-inner">
-                             <Tag size={24} strokeWidth={2.5} />
-                          </div>
-                          <div className="flex flex-col space-y-1">
-                             <h3 className="text-lg font-head font-black text-white uppercase tracking-tighter group-hover:text-gold transition-colors italic">{record.name}</h3>
-                             <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] font-mono italic">Sector: /{record.key}</span>
-                          </div>
-                       </div>
-                       <div className="flex items-center gap-2">
-                          <button className="h-10 w-10 text-white/20 hover:text-gold hover:bg-gold/10 border border-white/5 flex items-center justify-center rounded-sm transition-all shadow-xl active:scale-95" onClick={() => handleEdit(record)} title="Modify Schema"><Pencil size={18} /></button>
-                          <button className="h-10 w-10 text-white/20 hover:text-red hover:bg-red/10 border border-white/5 flex items-center justify-center rounded-sm transition-all shadow-xl active:scale-95" onClick={() => handleDelete(record)} title="Purge Schema"><Trash2 size={18} /></button>
-                       </div>
-                    </div>
-                    
-                    <div className="relative z-10 space-y-5 pt-8 border-t border-white/5 mt-8">
-                       <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/10 italic">Field Manifest Intel</span>
-                          <span className="text-[9px] font-black text-gold bg-gold/10 px-3 py-1 rounded-sm border border-gold/20 tracking-[0.2em] uppercase italic">{record.attributes?.length || 0} Enabled Parameters</span>
-                       </div>
-                       <div className="space-y-3">
-                          {(record.attributes || []).slice(0, 3).map((attr, i) => (
-                             <div key={i} className="flex items-center justify-between p-4 rounded-sm bg-ink/40 border border-white/5 group-hover:border-gold/10 transition-all shadow-inner">
-                                <span className="text-[10px] font-black text-white/60 uppercase tracking-widest">{attr.label}</span>
-                                <span className="text-[9px] font-black uppercase text-gold/40 tracking-[0.2em] italic">{attr.type}</span>
-                             </div>
-                          ))}
-                          {((record.attributes || []).length > 3) && (
-                            <div className="text-center pt-4">
-                              <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/10 italic animate-pulse">...and {(record.attributes || []).length - 3} additional coordinates</span>
-                            </div>
-                          )}
-                       </div>
-                    </div>
-                    
-                    <div className="relative z-10 mt-10">
-                       <button className="w-full h-12 rounded-sm border border-white/10 bg-white/[0.02] text-[10px] font-black uppercase tracking-widest text-white/20 group-hover:text-gold group-hover:border-gold/30 group-hover:bg-gold/5 transition-all flex items-center justify-center gap-3 italic">Establish Linkage Matrix <ArrowUpRight size={16} /></button>
-                    </div>
-                 </motion.article>
-               ))}
-            </div>
-         )}
-      </div>
 
-      <AnimatePresence>
-        {showForm && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[1000] flex items-center justify-center p-8 bg-ink/80 backdrop-blur-md">
-            <motion.div initial={{ scale: 0.95, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 30 }} className="relative w-full max-w-5xl bg-charcoal p-12 rounded-sm border border-white/10 shadow-2xl shadow-black/95 max-h-[95vh] overflow-y-auto scrollbar-none group">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-gold/5 -rotate-45 translate-x-16 -translate-y-16" />
-              
-              <button onClick={resetForm} className="absolute top-10 right-10 h-10 w-10 flex items-center justify-center rounded-sm bg-white/5 text-white/20 hover:text-white border border-white/10 hover:border-gold/30 transition-all shadow-xl active:scale-95"><X size={20} /></button>
-              
-              <div className="relative z-10 flex items-center gap-5 mb-12">
-                 <div className="h-14 w-14 flex items-center justify-center rounded-sm bg-olive text-white shadow-2xl shadow-olive/20 ring-1 ring-gold/20"><Settings size={28} strokeWidth={2.5} /></div>
-                 <div>
-                    <h2 className="text-3xl font-head font-black tracking-tighter text-white uppercase italic">{editingId ? "Modify Attribute Matrix" : "Establish New Attribute Hub"}</h2>
-                    <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic mt-1">Configuring tactical field parameters for asset deployment.</p>
-                 </div>
-              </div>
-
-              <div className="relative z-10 grid grid-cols-1 xl:grid-cols-2 gap-12">
-                <div className="space-y-8">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 italic ml-1">Asset Set Identification</label>
-                    <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full h-14 bg-ink border border-white/10 rounded-sm px-6 focus:border-gold transition-all font-head font-bold text-lg text-white uppercase tracking-wider outline-none shadow-inner" placeholder="e.g. Footwear Dynamics Sector" required />
+            <div className="space-y-4">
+              {form.attributes.map((field, idx) => (
+                <div
+                  key={idx}
+                  className="grid grid-cols-1 md:grid-cols-12 gap-4 bg-ink/40 p-4 border border-white/5 rounded-sm relative group"
+                >
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[8px] font-black text-white/20 uppercase tracking-widest leading-none">
+                      KEY
+                    </label>
+                    <input
+                      value={field.key}
+                      onChange={(e) =>
+                        updateAttributeField(idx, { key: e.target.value })
+                      }
+                      placeholder="field-key"
+                      className="w-full h-9 bg-ink border border-white/10 rounded-sm px-3 text-[10px] font-mono font-bold text-gold focus:border-gold outline-none"
+                    />
                   </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 italic ml-1">Matrix Map (Unique Slug)</label>
-                    <input value={form.key} onChange={e => setForm({ ...form, key: e.target.value })} className="w-full h-14 bg-ink border border-white/10 rounded-sm px-6 focus:border-gold transition-all font-mono text-sm font-bold text-gold uppercase tracking-widest outline-none shadow-inner" placeholder="footwear_sector_id" required />
+                  <div className="md:col-span-3 space-y-2">
+                    <label className="text-[8px] font-black text-white/20 uppercase tracking-widest leading-none">
+                      LABEL
+                    </label>
+                    <input
+                      value={field.label}
+                      onChange={(e) =>
+                        updateAttributeField(idx, { label: e.target.value })
+                      }
+                      placeholder="Field Label"
+                      className="w-full h-9 bg-ink border border-white/10 rounded-sm px-3 text-[10px] font-bold text-white uppercase focus:border-gold outline-none"
+                    />
                   </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 italic ml-1">Operational Manifest (Description)</label>
-                    <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="w-full h-44 p-6 bg-ink border border-white/10 rounded-sm focus:border-gold focus:outline-none font-bold text-[11px] text-white/60 uppercase tracking-widest leading-relaxed scrollbar-none italic shadow-inner resize-none" placeholder="Provide strategic context for this attribute set..."></textarea>
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[8px] font-black text-white/20 uppercase tracking-widest leading-none">
+                      TYPE
+                    </label>
+                    <select
+                      value={field.type}
+                      onChange={(e) =>
+                        updateAttributeField(idx, { type: e.target.value })
+                      }
+                      className="w-full h-9 bg-ink border border-white/10 rounded-sm px-3 text-[10px] font-black text-white uppercase focus:border-gold outline-none appearance-none"
+                    >
+                      <option value="select">Select</option>
+                      <option value="multiselect">Multi-Select</option>
+                      <option value="text">Protocol Text</option>
+                      <option value="number">Integer</option>
+                      <option value="boolean">Boolean Logic</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-4 space-y-2">
+                    <label className="text-[8px] font-black text-white/20 uppercase tracking-widest leading-none">
+                      OPTIONS (CSV)
+                    </label>
+                    <input
+                      value={field.options}
+                      onChange={(e) =>
+                        updateAttributeField(idx, { options: e.target.value })
+                      }
+                      placeholder="Option A, Option B..."
+                      className="w-full h-9 bg-ink border border-white/10 rounded-sm px-3 text-[10px] font-bold text-white/60 focus:border-gold outline-none"
+                    />
+                  </div>
+                  <div className="md:col-span-1 flex items-end justify-center pb-1">
+                    <button
+                      onClick={() => removeAttributeField(idx)}
+                      className="p-2 text-white/10 hover:text-red transition-colors"
+                    >
+                      <Trash size={14} />
+                    </button>
                   </div>
                 </div>
+              ))}
+            </div>
+          </div>
 
-                <div className="bg-ink/40 rounded-sm p-10 border border-white/5 flex flex-col shadow-inner">
-                  <div className="flex items-center justify-between mb-10">
-                     <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 italic">Field Manifest Parameters</h3>
-                     <button type="button" onClick={() => setForm(prev => ({ ...prev, attributes: [...prev.attributes, createEmptyField()] }))} className="h-12 px-6 bg-olive text-white font-head font-bold text-[10px] uppercase tracking-widest hover:bg-olive-lt transition-all active:scale-95 shadow-2xl shadow-olive/20 flex items-center gap-2"><Plus size={18} /> Add Coordinate</button>
-                  </div>
+          <div className="flex justify-end gap-4 pt-8 border-t border-white/5">
+            <button
+              type="button"
+              onClick={resetForm}
+              className="h-12 px-8 bg-charcoal border border-white/10 text-white/40 font-black text-[10px] uppercase tracking-widest hover:text-white"
+            >
+              Abort Config
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="h-12 px-12 bg-olive text-white font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-olive/20 flex items-center gap-3"
+            >
+              {saving ? (
+                <div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Save size={16} />
+              )}
+              {editingId ? "Update Logic" : "Deploy Matrix"}
+            </button>
+          </div>
+        </div>
+      )}
 
-                  <div className="space-y-6 flex-1 max-h-[440px] overflow-y-auto pr-4 scrollbar-none">
-                    {form.attributes.map((attr, idx) => (
-                      <div key={idx} className="relative bg-charcoal border border-white/5 rounded-sm p-8 shadow-2xl group/field hover:border-gold/20 transition-all">
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-3">
-                               <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] italic">Coordinate Key</label>
-                               <input value={attr.key} onChange={e => updateAttribute(idx, { key: e.target.value })} className="w-full h-12 text-xs font-mono font-bold uppercase tracking-widest bg-ink border border-white/10 rounded-sm px-4 focus:border-gold outline-none text-gold" placeholder="color_id" />
-                            </div>
-                            <div className="space-y-3">
-                               <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] italic">Display Handle</label>
-                               <input value={attr.label} onChange={e => updateAttribute(idx, { label: e.target.value })} className="w-full h-12 text-xs font-black uppercase bg-ink border border-white/10 rounded-sm px-4 focus:border-gold outline-none text-white italic" placeholder="Asset Hue" />
-                            </div>
-                         </div>
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                            <div className="space-y-3">
-                               <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] italic">Intelligence Type</label>
-                               <select value={attr.type} onChange={e => updateAttribute(idx, { type: e.target.value })} className="w-full h-12 px-4 bg-ink border border-white/10 rounded-sm text-[10px] font-black uppercase tracking-widest text-white/80 focus:border-gold outline-none appearance-none cursor-pointer">
-                                  <option value="select">Dynamic Selection</option>
-                                  <option value="multiselect">Multi-Grid Matrix</option>
-                                  <option value="text">Observation Stream</option>
-                               </select>
-                            </div>
-                            <div className="space-y-3">
-                               <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] italic">Options Stream (CSV)</label>
-                               <input value={attr.options} onChange={e => updateAttribute(idx, { options: e.target.value })} className="w-full h-12 text-xs font-bold bg-ink border border-white/10 rounded-sm px-4 focus:border-gold outline-none text-white/60" placeholder="OD-Green, Black, Coyote" />
-                            </div>
-                         </div>
-                         <button onClick={() => removeAttribute(idx)} className="absolute -top-3 -right-3 h-10 w-10 rounded-sm bg-red/10 text-red hover:bg-red hover:text-white flex items-center justify-center opacity-0 group-field-hover:opacity-100 transition-all border border-red/20 shadow-2xl active:scale-95"><X size={18} /></button>
-                      </div>
-                    ))}
+      {/* Grid Controls */}
+      <div className="flex flex-col sm:flex-row gap-6 items-center justify-between bg-charcoal p-5 rounded-none border border-white/5 shadow-2xl shadow-black/40">
+        <div className="relative w-full sm:w-[400px] group">
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-gold transition-colors"
+            size={16}
+          />
+          <input
+            placeholder="IDENTIFY MATRIX BY DESIGNATION OR KEY..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full h-11 pl-12 pr-4 bg-ink border border-white/10 rounded-sm text-xs font-black uppercase tracking-widest text-white placeholder:text-white/10 focus:border-gold outline-none"
+          />
+        </div>
+        <div className="flex items-center gap-3 text-white/20 italic text-[10px] font-black uppercase tracking-widest">
+          <Database size={14} /> Repository Sync Active
+        </div>
+      </div>
+
+      {/* Attributes Grid */}
+      {loading ? (
+        <div className="h-64 flex flex-col items-center justify-center gap-4 bg-charcoal border border-white/5">
+          <div className="h-8 w-8 border-2 border-white/5 border-t-gold rounded-full animate-spin shadow-lg shadow-gold/20" />
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 italic animate-pulse">
+            Decoding Attribute Matrix...
+          </span>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="h-64 flex flex-col items-center justify-center gap-6 bg-charcoal border border-white/5 opacity-10">
+          <Layers size={48} />
+          <span className="text-[10px] font-black uppercase tracking-[0.4em]">
+            Matrix Node Registry Vacant
+          </span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map((record) => (
+            <div
+              key={record._id}
+              className="bg-charcoal border border-white/5 p-6 space-y-4 hover:border-gold/30 transition-all group shadow-2xl shadow-black/40"
+            >
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-black text-white uppercase tracking-widest group-hover:text-gold transition-colors">
+                    {record.name}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[8px] font-mono font-bold text-gold/60 uppercase tracking-widest px-2 py-0.5 bg-ink border border-gold/10">
+                      {record.key}
+                    </span>
+                    <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">
+                      {record.attributes?.length || 0} LOGIC FIELDS
+                    </span>
                   </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEdit(record)}
+                    className="p-2 text-white/10 hover:text-gold hover:bg-gold/10 transition-all"
+                  >
+                    <Edit size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(record)}
+                    className="p-2 text-white/10 hover:text-red hover:bg-red/10 transition-all"
+                  >
+                    <Trash size={14} />
+                  </button>
                 </div>
               </div>
 
-              <div className="relative z-10 mt-16 flex justify-end gap-6 border-t border-white/5 pt-12">
-                 <button type="button" onClick={resetForm} className="h-14 px-12 rounded-sm text-white/20 hover:text-white font-head font-bold uppercase tracking-widest text-[11px] transition-all italic">Abort Command</button>
-                 <button onClick={handleSave} disabled={saving} className="h-14 px-20 bg-red text-white hover:bg-red-lt font-head font-bold uppercase tracking-widest text-[11px] shadow-2xl shadow-red/20 transition-all active:scale-95 flex items-center justify-center gap-4">
-                    {saving ? <div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : editingId ? "Force Synchronization" : "Commit Establishment"}
-                 </button>
+              <div className="space-y-2 pt-4 border-t border-white/5">
+                {(record.attributes || []).slice(0, 3).map((a, i) => (
+                  <div
+                    key={i}
+                    className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest"
+                  >
+                    <span className="text-white/40">{a.label}</span>
+                    <span className="text-white/20 italic">{a.type}</span>
+                  </div>
+                ))}
+                {(record.attributes || []).length > 3 && (
+                  <p className="text-[8px] font-bold text-white/10 uppercase tracking-[0.2em] pt-1">
+                    + {(record.attributes || []).length - 3} ADDITIONAL FIELDS
+                    DETECTED
+                  </p>
+                )}
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+              {record.description && (
+                <p className="text-[9px] font-bold text-white/20 uppercase tracking-tight italic line-clamp-2 pt-2 border-t border-white/5">
+                  {record.description}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Footer Intel */}
+      <div className="flex items-center gap-3 opacity-40">
+        <Terminal size={14} className="text-gold" />
+        <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.4em]">
+          Logistics Terminal: Secure Link | Stream Encryption: AES-256
+        </span>
+      </div>
+
+      <TacticalImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImport={handleImport}
+        sampleData={attributeSampleData}
+        title="Attribute Matrix Injection"
+        description="Synchronize bulk attribute logic hubs via secure JSON manifest."
+        fileName="attributes"
+      />
+    </div>
+  );
+}
+
+export default function AttributesPage() {
+  return (
+    <div className="p-4 md:p-8 min-h-screen bg-ink">
+      <Suspense
+        fallback={
+          <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
+            <div className="h-8 w-8 border-2 border-white/5 border-t-gold rounded-full animate-spin shadow-lg shadow-gold/20" />
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 italic">
+              Initializing Tactical Hub...
+            </span>
+          </div>
+        }
+      >
+        <AttributesPageContent />
+      </Suspense>
     </div>
   );
 }

@@ -23,7 +23,9 @@ import Link from "next/link";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -34,9 +36,9 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      await dispatch(signupThunk({ name, email, password })).unwrap();
+      await dispatch(signupThunk({ name, username, email, address, password })).unwrap();
       toast.success("Recruitment successful. Access granted to primary terminal.");
-      router.push("/admin/login"); // Redirect to login after signup
+      router.push("/login"); // Redirect to login after signup
     } catch (err: any) {
       toast.error(err || "Recruitment error: Identity could not be established.");
     } finally {
@@ -122,6 +124,20 @@ export default function SignupPage() {
 
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-black ml-1 flex items-center gap-2">
+                 <Fingerprint size={12} className="text-emerald-600" /> Tactical Code Name
+              </label>
+              <Input 
+                type="text" 
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="!placeholder:text-black !placeholder:opacity-100 !placeholder:font-bold text-black h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic placeholder:font-normal"
+                placeholder="ENTER CODE NAME"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-black ml-1 flex items-center gap-2">
                  <Mail size={12} className="text-emerald-600" /> Intel Address
               </label>
               <Input 
@@ -131,6 +147,20 @@ export default function SignupPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="!placeholder:text-black !placeholder:opacity-100 !placeholder:font-bold text-black h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic placeholder:font-normal"
                 placeholder="ENTER INTEL ADDRESS"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-black ml-1 flex items-center gap-2">
+                 <Zap size={12} className="text-emerald-600" /> Sector Location
+              </label>
+              <Input 
+                type="text" 
+                required
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="!placeholder:text-black !placeholder:opacity-100 !placeholder:font-bold text-black h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic placeholder:font-normal"
+                placeholder="ENTER SECTOR COORDINATES"
               />
             </div>
             
