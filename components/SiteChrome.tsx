@@ -29,6 +29,7 @@ import { RootState } from "@/lib/store/store";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { selectCartCount } from "@/lib/store/cart/cartSlice";
+import Image from "next/image";
 
 const topbarLocations = [
   { label: "Phoenix", detail: "12450 N 35th Ave — (623) 435-2640" },
@@ -111,8 +112,8 @@ export default function SiteChrome({
             className="flex items-center gap-2"
             onClick={() => setIsMenuOpen(false)}
           >
-            <div className="h-8 w-8 bg-olive border border-olive-lt rounded-[2px] flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 42 42" fill="none">
+            <div className="object-contain border border-olive-lt rounded-[2px] flex items-center justify-center">
+              {/* <svg width="20" height="20" viewBox="0 0 42 42" fill="none">
                 <polygon
                   points="21,6 36,34 6,34"
                   fill="none"
@@ -120,11 +121,18 @@ export default function SiteChrome({
                   strokeWidth="2.5"
                 />
                 <circle cx="21" cy="21" r="5" fill="#c9a227" />
-              </svg>
+              </svg> */}
+              <Image
+                src="/assets/Image/footer-logo-2.webp"
+                alt="Footer Logo"
+                width={100}
+                height={100}
+                className=""
+              />
             </div>
-            <span className="font-head text-lg font-bold text-white tracking-widest uppercase">
+            {/* <span className="font-head text-lg font-bold text-white tracking-widest uppercase">
               IronForge
-            </span>
+            </span> */}
           </Link>
           <button
             onClick={() => setIsMenuOpen(false)}
@@ -300,8 +308,8 @@ export default function SiteChrome({
             href="/"
             className="header__logo shrink-0 flex items-center gap-2.5"
           >
-            <div className="h-[38px] w-[38px] md:h-[42px] md:w-[42px] bg-olive border border-olive-lt rounded-[3px] flex items-center justify-center">
-              <svg
+            <div className="object-contain border border-olive-lt rounded-[3px] flex items-center justify-center">
+              {/* <svg
                 className="w-6 h-6 md:w-7 md:h-7"
                 viewBox="0 0 42 42"
                 fill="none"
@@ -313,16 +321,23 @@ export default function SiteChrome({
                   strokeWidth="2.5"
                 />
                 <circle cx="21" cy="21" r="5" fill="#c9a227" />
-              </svg>
+              </svg> */}
+              <Image
+                src="/assets/Image/footer-logo-2.webp"
+                alt="Footer Logo"
+                width={70}
+                height={70}
+                className=""
+              />
             </div>
-            <div className="logo-text hidden sm:flex flex-col leading-none">
+            {/* <div className="logo-text hidden sm:flex flex-col leading-none">
               <span className="font-head text-[18px] md:text-[22px] font-extrabold tracking-[0.06em] text-white uppercase">
                 IronForge
               </span>
               <span className="font-head text-[9px] md:text-[11px] font-normal tracking-[0.18em] text-gold uppercase">
                 Tactical Surplus
               </span>
-            </div>
+            </div> */}
           </Link>
 
           {/* Search (Adjusted for mobile) */}
@@ -602,8 +617,8 @@ export default function SiteChrome({
                 href="/"
                 className="footer-logo flex items-center gap-2.5 mb-6"
               >
-                <div className="h-[36px] w-[36px] bg-olive border border-olive-lt rounded-[3px] flex items-center justify-center">
-                  <svg width="24" height="24" viewBox="0 0 42 42" fill="none">
+                <div className=" object-contain  border border-olive-lt rounded-[3px] flex items-center justify-center">
+                  {/* <svg width="24" height="24" viewBox="0 0 42 42" fill="none">
                     <polygon
                       points="21,6 36,34 6,34"
                       fill="none"
@@ -611,16 +626,23 @@ export default function SiteChrome({
                       strokeWidth="2.5"
                     />
                     <circle cx="21" cy="21" r="5" fill="#c9a227" />
-                  </svg>
+                  </svg> */}
+                  <Image
+                    src="/assets/Image/footer-logo-2.webp"
+                    alt="Footer Logo"
+                    width={100}
+                    height={100}
+                    className=""
+                  />
                 </div>
-                <div className="logo-text flex flex-col leading-none">
+                {/* <div className="logo-text flex flex-col leading-none">
                   <span className="font-head text-[18px] font-extrabold tracking-wider text-white uppercase">
                     IronForge
                   </span>
                   <span className="font-head text-[10px] font-normal tracking-widest text-gold uppercase">
                     Tactical Surplus
                   </span>
-                </div>
+                </div> */}
               </Link>
               <p className="text-[15px] text-white/70 leading-relaxed max-w-[320px] mb-6 italic">
                 America's trusted source for military surplus, tactical gear,
