@@ -13,7 +13,7 @@ export default function GetAllAttributes() {
 
   const dispatch = useDispatch<AppDispatch>();
 
-  const { nestCraftUser: user } = useSelector((state: RootState) => state.auth);
+  const { user: user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     if (!user) return;

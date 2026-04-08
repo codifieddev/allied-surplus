@@ -40,6 +40,7 @@ export interface ProductFormState {
   relatedProductIds: string[];
   templateKey: string;
   price?: string;
+  formId?: string;
 }
 
 interface ProductsState {
@@ -74,6 +75,7 @@ const initialFormState: ProductFormState = {
   primaryCategoryId: "",
   relatedProductIds: [],
   templateKey: "product-split",
+  formId: "",
 };
 
 const initialState: ProductsState = {
@@ -179,6 +181,7 @@ const productsSlice = createSlice({
           primaryCategoryId: p.primaryCategoryId || "",
           relatedProductIds: p.relatedProductIds || [],
           templateKey: p.templateKey || "product-split",
+          formId: p.formId || "",
         };
       })
       .addCase(fetchProductById.rejected, (state, action) => {

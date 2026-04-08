@@ -1,16 +1,16 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Page } from './pageType';
-import { 
-  fetchPagesThunk, 
-  fetchPageBySlugThunk, 
-  createPageThunk, 
-  updatePageThunk, 
-  deletePageThunk 
-} from './pageThunk';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Page } from "./pageType";
+import {
+  fetchPagesThunk,
+  fetchPageBySlugThunk,
+  createPageThunk,
+  updatePageThunk,
+  deletePageThunk,
+} from "./pageThunk";
 
 interface PageState {
   allPages: Page[];
-    currentPages: Page | null;
+  currentPages: Page | null;
   isAllPageFetched: boolean;
   isError: boolean;
   isLoading: boolean;
@@ -25,7 +25,7 @@ const initialState: PageState = {
 };
 
 const pagesSlice = createSlice({
-  name: 'pages',
+  name: "pages",
   initialState,
   reducers: {
     setAllPages: (state, action: PayloadAction<Page[]>) => {
@@ -54,11 +54,10 @@ const pagesSlice = createSlice({
         state.isLoading = false;
         state.allPages = action.payload;
         state.isAllPageFetched = true;
-        const data=action.payload.find((page:Page)=>page.slug==="home")
-        if(data){
-          state.currentPages=data
+        const data = action.payload.find((page: Page) => page.slug === "home");
+        if (data) {
+          state.currentPages = data;
         }
-        
       })
       .addCase(fetchPagesThunk.rejected, (state) => {
         state.isLoading = false;
@@ -97,7 +96,9 @@ const pagesSlice = createSlice({
       })
       .addCase(updatePageThunk.fulfilled, (state, action) => {
         state.isLoading = false;
-        const index = state.allPages.findIndex(page => page._id === action.payload._id);
+        const index = state.allPages.findIndex(
+          (page) => page._id === action.payload._id,
+        );
         if (index !== -1) {
           state.allPages[index] = action.payload;
         }
@@ -116,7 +117,9 @@ const pagesSlice = createSlice({
       })
       .addCase(deletePageThunk.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.allPages = state.allPages.filter(page => page._id !== action.payload);
+        state.allPages = state.allPages.filter(
+          (page) => page._id !== action.payload,
+        );
         if (state.currentPages?._id === action.payload) {
           state.currentPages = null;
         }
@@ -128,5 +131,6 @@ const pagesSlice = createSlice({
   },
 });
 
-export const { setAllPages, setCurrentPages, setLoading, setError } = pagesSlice.actions;
+export const { setAllPages, setCurrentPages, setLoading, setError } =
+  pagesSlice.actions;
 export default pagesSlice.reducer;

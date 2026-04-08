@@ -22,7 +22,7 @@ export const MediaLibraryModal = ({
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = externalOpen !== undefined;
   const open = isControlled ? externalOpen : internalOpen;
-  
+
   const setOpen = (val: boolean) => {
     if (isControlled) {
       if (!val && externalClose) externalClose();
@@ -41,7 +41,7 @@ export const MediaLibraryModal = ({
 
   return (
     <>
-      <div onClick={() => setOpen(true)} className="cursor-pointer">
+      {/* <div onClick={() => setOpen(true)} className="cursor-pointer">
         {trigger || (
           <Button
             variant="outline"
@@ -51,10 +51,10 @@ export const MediaLibraryModal = ({
             <ImageIcon size={18} />
           </Button>
         )}
-      </div>
+      </div> */}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="!h-[95vh] !max-w-[95vw] w-[95vw] !p-1 border-2 border-gold bg-ink shadow-[0_0_50px_rgba(212,175,55,0.2)] [&>button]:hidden">
+        <DialogContent className="!max-w-6xl overflow-y-auto  !h-[80vh] bg-ink">
           <div className="bg-charcoal h-full flex flex-col border border-charcoal-light">
             <div className="flex items-center justify-between p-6 border-b border-charcoal-light bg-ink">
               <div className="flex items-center gap-4">
@@ -68,20 +68,9 @@ export const MediaLibraryModal = ({
                   </p>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setOpen(false)}
-                className="text-slate-500 hover:text-gold hover:bg-charcoal transition-all"
-              >
-                <X size={24} />
-              </Button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto bg-ink">
-              <MediaUploader onSelect={handleSelect} hideHeader={true} />
             </div>
           </div>
+          <MediaUploader onSelect={handleSelect} hideHeader={true} />
         </DialogContent>
       </Dialog>
     </>

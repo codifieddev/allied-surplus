@@ -110,15 +110,10 @@ export const cartSlice = createSlice({
         state.error = action.payload as string;
       })
       // Update Quantity Async
-      .addCase(updateQuantityAsync.pending, (state) => {
-        state.loading = true;
-      })
       .addCase(updateQuantityAsync.fulfilled, (state, action) => {
-        state.loading = false;
         state.items = action.payload.data;
       })
       .addCase(updateQuantityAsync.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload as string;
       })
       // Remove from Cart Async
@@ -163,7 +158,10 @@ export const selectCartTotal = (state: RootState) =>
     } else {
       // Remove currency symbols if present before converting to number
       const priceStr = item.price || (item as any).pricing?.price || "0";
-      const price = typeof priceStr === "string" ? Number(priceStr.replace(/[^\d.]/g, "")) : Number(priceStr) || 0;
+      const price =
+        typeof priceStr === "string"
+          ? Number(priceStr.replace(/[^\d.]/g, ""))
+          : Number(priceStr) || 0;
       return total + price * item.quantity;
     }
   }, 0);

@@ -1,20 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getCategoryModel } from "@/models";
 import { authenticateAdmin } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 
-export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const type = url.searchParams.get("type");
+export async function GET(req: NextRequest) {
+  const searchParams = req.nextUrl.searchParams;
+  const type = searchParams.get("type");
 
   const query: any = {};
   if (type) query.type = type;
 
+  console.log("====>>", query);
+
   try {
     const Category = await getCategoryModel();
     const categories = await Category.find(query).toArray();
-
-    console.log(categories);
     return NextResponse.json(categories);
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });

@@ -27,6 +27,8 @@ import { Link } from "@/lib/router";
 import { cn } from "@/lib/utils";
 import { RootState } from "@/lib/store/store";
 import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import { selectCartCount } from "@/lib/store/cart/cartSlice";
 
 const topbarLocations = [
   { label: "Phoenix", detail: "12450 N 35th Ave — (623) 435-2640" },
@@ -67,17 +69,21 @@ export default function SiteChrome({
     useState(defaultCategoryPanel);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const cartCount = useSelector(selectCartCount);
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 100);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+  const router = useRouter();
 
   const openCartDrawer = () => {
-    window.dispatchEvent(new CustomEvent("surplus-open-cart"));
+    router.push("/cart");
+    // window.dispatchEvent(new CustomEvent("surplus-open-cart"));
   };
 
-  const { nestCraftUser } = useSelector((state: RootState) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   return (
     <div className="min-h-screen bg-ink text-cream flex flex-col font-body selection:bg-gold selection:text-ink overflow-x-hidden">
@@ -189,7 +195,7 @@ export default function SiteChrome({
                 >
                   <Truck size={16} /> Order Tracking
                 </Link>
-                {nestCraftUser?.role !== "customer" && (
+                {user?.role !== "customer" && (
                   <Link
                     href="/admin"
                     className="flex p-1 border-2 border-gold bg-white text-black items-center gap-1.5  transition-colors"
@@ -266,7 +272,7 @@ export default function SiteChrome({
             >
               <Truck size={12} /> Order Tracking
             </Link>
-            {nestCraftUser?.role !== "customer" && (
+            {user?.role !== "customer" && (
               <Link
                 href="/admin"
                 className="flex p-1 border-2 border-gold items-center gap-1.5 hover:text-gold transition-colors"
@@ -359,7 +365,7 @@ export default function SiteChrome({
               />
               <span className="hidden sm:inline">Cart</span>
               <span className="cart-badge absolute top-[5px] right-[8px] bg-red text-white text-[9px] font-bold w-[16px] h-[16px] rounded-full flex items-center justify-center border border-white/10 shadow-lg">
-                0
+                {cartCount}
               </span>
             </button>
             <a

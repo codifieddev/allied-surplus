@@ -126,6 +126,44 @@ const NAV_ITEMS = [
       },
     ],
   },
+  {
+    group: "Personnel Intelligence",
+    items: [
+      {
+        label: "Personnel",
+        href: "/admin/customers",
+        icon: User,
+        exact: false,
+        badge: null,
+      },
+      {
+        label: "Command Staff",
+        href: "/admin/users",
+        icon: Shield,
+        exact: false,
+        badge: "Admin",
+      },
+    ],
+  },
+  {
+    group: "Field Intelligence",
+    items: [
+      {
+        label: "Form Matrix",
+        href: "/admin/forms",
+        icon: Zap,
+        exact: false,
+        badge: null,
+      },
+      {
+        label: "Captured Data",
+        href: "/admin/form-submissions",
+        icon: Database,
+        exact: false,
+        badge: "New",
+      },
+    ],
+  },
 ];
 
 export function AppSidebar() {
