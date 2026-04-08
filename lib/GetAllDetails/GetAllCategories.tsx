@@ -11,22 +11,21 @@ export default function GetAllCategories({
 }: {
   type?: string;
 }) {
-  const { allCategories, categoryLoading, hasCategoriesFetched } = useSelector(
+  const { categoryLoading, hasCategoriesFetched } = useSelector(
     (state: RootState) => state.adminCategories,
   );
 
   const dispatch = useDispatch<AppDispatch>();
 
-  const { nestCraftUser } = useSelector((state: RootState) => state.auth);
-
+  const { user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    if (!nestCraftUser && type) return;
+    if (!user && type == "admin") return;
 
     if (!hasCategoriesFetched && !categoryLoading) {
-      dispatch(fetchCategories());
+      dispatch(fetchCategories({}));
     }
-  }, [nestCraftUser, hasCategoriesFetched, categoryLoading]);
+  }, [user, hasCategoriesFetched, categoryLoading]);
 
   return null;
 }

@@ -37,8 +37,6 @@ export async function GET() {
     const Cart = await getCartModel();
     let cart = await Cart.findOne({ sessionId });
 
-    console.log(cart);
-
     if (user?.userId) {
       const userCart = await Cart.findOne({
         userId: new ObjectId(user.userId),
@@ -125,20 +123,34 @@ export async function POST(request: NextRequest) {
       }
     } else {
       const cart = await Cart.findOne({ sessionId: sessionId });
-      const existingItemIndex = cart?.items.findIndex(
-        (i: any) => i.cartItemId === item.cartItemId,
-      );
-      if (cart && existingItemIndex > -1) {
-        cart.items[existingItemIndex].quantity += item.quantity;
-        await Cart.updateOne(
-          { sessionId: sessionId },
-          { $set: { items: cart?.items, updatedAt: new Date() } },
+
+      if (cart) {
+        const existingItemIndex = cart?.items.findIndex(
+          (i: any) => i.cartItemId === item.cartItemId,
         );
-        return NextResponse.json({
-          message: "Item added to cart",
-          data: item,
-          status: 200,
-        });
+        if (existingItemIndex > -1) {
+          cart.items[existingItemIndex].quantity += item.quantity;
+          await Cart.updateOne(
+            { sessionId: sessionId },
+            { $set: { items: cart?.items, updatedAt: new Date() } },
+          );
+          return NextResponse.json({
+            message: "Item added to cart",
+            data: cart.items,
+            status: 200,
+          });
+        } else {
+          cart.items.push(item);
+          await Cart.updateOne(
+            { sessionId: sessionId },
+            { $set: { items: cart?.items, updatedAt: new Date() } },
+          );
+          return NextResponse.json({
+            message: "Item added to cart",
+            data: cart.items,
+            status: 200,
+          });
+        }
       } else {
         const newCart = {
           sessionId: sessionId,

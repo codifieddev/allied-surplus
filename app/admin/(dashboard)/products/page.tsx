@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import {
   fetchProducts,
   deleteProduct,
+  bulkImportProducts,
 } from "@/lib/store/products/productsThunk";
 import {
   Table,
@@ -43,6 +44,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { RootState } from "@/lib/store/store";
+import { TacticalImportModal } from "@/components/admin/TacticalImportModal";
 
 function ProductsPageContent() {
   const dispatch = useAppDispatch();
@@ -53,7 +55,57 @@ function ProductsPageContent() {
   );
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [showImportModal, setShowImportModal] = useState(false);
   const [importing, setImporting] = useState(false);
+
+  const handleImport = async (data: any[]) => {
+    setImporting(true);
+    try {
+      const resultAction = await dispatch(bulkImportProducts(data));
+      if (bulkImportProducts.fulfilled.match(resultAction)) {
+        // dispatch(fetchProducts());
+        return resultAction.payload;
+      } else {
+        throw new Error(
+          (resultAction.payload as string) || "Bulk import protocol failed.",
+        );
+      }
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const productSampleData = [
+    {
+      name: "Tactical Load-Bearing Vest",
+      sku: "VEST-TAC-001",
+      type: "physical",
+      price: 149.99,
+      status: "active",
+      description: "Heavy-duty modular vest with MOLLE attachment points.",
+      categories: ["tactical-gear", "apparel"],
+      images: [
+        "https://images.unsplash.com/photo-1595079676339-152e923e2000?auto=format&fit=crop&q=80&w=800",
+      ],
+      options: [
+        {
+          label: "Color",
+          values: ["Olive", "Coyote", "Black"],
+          useForVariants: true,
+        },
+        { label: "Size", values: ["Reg", "Large"], useForVariants: true },
+      ],
+      variants: [
+        {
+          sku: "VEST-TAC-001-OLV-R",
+          title: "Olive / Regular",
+          price: 149.99,
+          stock: 25,
+          optionValues: { Color: "Olive", Size: "Reg" },
+        },
+      ],
+    },
+  ];
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Confirm decommissioning of unit: "${name}"?`)) return;
@@ -95,7 +147,7 @@ function ProductsPageContent() {
         <div className="flex items-center gap-4">
           <button
             className="h-12 px-6 bg-white/5 border border-white/10 text-white/40 font-head font-bold text-xs uppercase tracking-widest rounded-sm hover:text-white hover:border-gold/30 transition-all flex items-center gap-2 group"
-            onClick={() => document.getElementById("import-json")?.click()}
+            onClick={() => setShowImportModal(true)}
             disabled={importing}
           >
             <Upload
@@ -104,6 +156,15 @@ function ProductsPageContent() {
             />{" "}
             Import Batch
           </button>
+          <TacticalImportModal
+            isOpen={showImportModal}
+            onClose={() => setShowImportModal(false)}
+            onImport={handleImport}
+            sampleData={productSampleData}
+            title="Bulk Asset Import"
+            description="Upload JSON batch files to synchronize inventory nodes with tactical grid."
+            fileName="allied_surplus_products"
+          />
           <Link href="/admin/products/new">
             <button className="h-12 px-8 bg-olive text-white hover:bg-olive-lt font-head font-bold text-xs uppercase tracking-widest rounded-sm transition-all active:scale-95 flex items-center gap-3 shadow-2xl shadow-olive/20">
               <Plus size={18} /> Add Product
@@ -195,8 +256,8 @@ function ProductsPageContent() {
                       <div className="h-16 w-16 rounded-sm overflow-hidden bg-ink border border-white/5 group-hover:border-gold/30 transition-all ring-1 ring-gold/0 group-hover:ring-gold/5">
                         {prod.gallery && prod.gallery[0] ? (
                           <img
-                            src={String(prod.gallery[0])}
-                            alt={prod.name}
+                            src={String(prod.gallery[0].url)}
+                            alt={String(prod.gallery[0].alt)}
                             className="h-full w-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-500"
                           />
                         ) : (

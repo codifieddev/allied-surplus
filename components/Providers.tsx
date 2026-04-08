@@ -1,7 +1,15 @@
 "use client";
 
-import React from 'react';
+import GetAllCategories from "@/lib/GetAllDetails/GetAllCategories";
+import React from "react";
+import GetCart from "@/lib/GetAllDetails/GetCart";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <GetAllCategories type="normal" />
+      <GetCart />
+      {children}
+    </>
+  );
 }

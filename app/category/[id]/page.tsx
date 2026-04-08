@@ -1,5 +1,12 @@
-import Component from '@/components/pages/CategoryPage';
+import { Suspense } from "react";
+import Component from "@/components/pages/CategoryPage";
+import GetProductCategoryWise from "@/lib/GetAllDetails/GetProductCategoryWise";
 
 export default function Page() {
-  return <Component />;
+  return (
+    <Suspense fallback={<div>Loading Category...</div>}>
+      <GetProductCategoryWise />
+      <Component />
+    </Suspense>
+  );
 }

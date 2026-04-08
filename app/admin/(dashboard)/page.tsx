@@ -95,7 +95,7 @@ export default function AdminDashboard() {
     (state: RootState) => state.adminProducts,
   );
 
-  const { nestCraftUser } = useSelector((state: RootState) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const mainLoading = categoryLoading && attributeLoading && loading;
 

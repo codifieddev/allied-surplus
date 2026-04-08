@@ -1,61 +1,252 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, Link } from '@/lib/router';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Star, 
-  Heart, 
-  Share2, 
-  Minus, 
-  Plus, 
+import React, { useState, useEffect, useMemo } from "react";
+import { useParams, Link } from "@/lib/router";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  Star,
+  Heart,
+  Minus,
+  Plus,
   ChevronDown,
   ChevronUp,
   Truck,
   RotateCcw,
-  ShieldCheck,
   Info,
-  Check
-} from 'lucide-react';
-import { products, categories } from '../../data/products';
-import { useAppDispatch } from '../../lib/store/hooks';
-import { addToCart } from '@/lib/store/cart/cartSlice';
+  Check,
+  Edit3,
+} from "lucide-react";
+import { useAppDispatch } from "../../lib/store/hooks";
+import { addToCartAsync } from "../../lib/store/cart/cartThunk";
+import { RootState } from "@/lib/store/store";
+import { useSelector } from "react-redux";
+import { composeVariantKey } from "@/lib/admin-products/utils";
 
-const ProductDetailPage = () => {
+const ProductDetailPage = ({
+  currentProduct,
+  form,
+}: {
+  currentProduct: any;
+  form?: any;
+}) => {
+  const { allCategories } = useSelector(
+    (state: RootState) => state.adminCategories,
+  );
+
+  const { items, loading, error, hasCartFetched } = useSelector(
+    (state: RootState) => state.cart,
+  );
+
   const { id } = useParams<{ id: string }>();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [openAccordion, setOpenAccordion] = useState<string | null>('details');
+  const [activeTab, setActiveTab] = useState("overview");
+  const [openAccordion, setOpenAccordion] = useState<string | null>("details");
   const [isAdded, setIsAdded] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
+  const [selectedOptions, setSelectedOptions] = useState<
+    Record<string, string>
+  >({});
+
+  // Form state
+  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
   const dispatch = useAppDispatch();
 
-  const product = useMemo(() => {
-    return products.find(p => p.id === Number(id));
-  }, [id]);
+  // Get primary image URL
+  const primaryImage = useMemo(() => {
+    if (!currentProduct) return "";
+    const primaryImg = currentProduct.gallery?.find(
+      (img: any) => img.id === currentProduct.primaryImageId,
+    );
+    return primaryImg?.url || currentProduct.gallery?.[0]?.url || "";
+  }, [currentProduct]);
 
-  const currentCategory = useMemo(() => {
-    if (!product) return null;
-    return categories.find(c => c.name.toLowerCase() === product.category.toLowerCase());
-  }, [product]);
+  // Get all gallery images
+  const galleryImages = useMemo(() => {
+    if (!currentProduct?.gallery) return [];
+    return currentProduct.gallery.map((img: any) => img.url);
+  }, [currentProduct]);
 
-  const relatedProducts = useMemo(() => {
-    if (!product) return [];
-    return products
-      .filter(p => p.category === product.category && p.id !== product.id)
-      .slice(0, 4);
-  }, [product]);
+  // Build category breadcrumb path
+  const categoryPath = useMemo(() => {
+    if (!currentProduct || !allCategories) return [];
+
+    const buildPath = (categoryId: string, path: any[] = []): any[] => {
+      const category = allCategories.find((c: any) => c._id === categoryId);
+      if (!category) return path;
+
+      path.unshift(category);
+      if (category.parentId) {
+        return buildPath(category.parentId, path);
+      }
+      return path;
+    };
+
+    if (currentProduct.primaryCategoryId) {
+      return buildPath(currentProduct.primaryCategoryId);
+    }
+    return [];
+  }, [currentProduct, allCategories]);
+
+  // Get primary category name
+  const primaryCategory = useMemo(() => {
+    if (!currentProduct || !allCategories) return "";
+    const category = allCategories.find(
+      (c: any) => c._id === currentProduct.primaryCategoryId,
+    );
+    return category?.title || "";
+  }, [currentProduct, allCategories]);
+
+  // Get variant options (options marked for variants)
+  const variantOptions = useMemo(() => {
+    if (!currentProduct?.options) return [];
+    return currentProduct.options.filter((opt: any) => opt.useForVariants);
+  }, [currentProduct]);
+
+  // Group options by attributeSetId for specifications
+  const groupedOptions = useMemo(() => {
+    if (!currentProduct?.options) return {};
+
+    const groups: Record<string, any[]> = {};
+
+    currentProduct.options.forEach((option: any) => {
+      if (option.selectedValues && option.selectedValues.length > 0) {
+        const setId = option.attributeSetId || "other";
+        if (!groups[setId]) {
+          groups[setId] = [];
+        }
+        groups[setId].push(option);
+      }
+    });
+
+    return groups;
+  }, [currentProduct]);
+
+  // Initialize selected variant and options
+  useEffect(() => {
+    if (currentProduct?.variants && currentProduct.variants.length > 0) {
+      const firstVariant = currentProduct.variants[0];
+      setSelectedVariant(firstVariant);
+      setSelectedOptions(firstVariant.optionValues || {});
+    }
+  }, [currentProduct]);
+
+  // Initialize form data
+  useEffect(() => {
+    if (form?.fields) {
+      const initialData: Record<string, string> = {};
+      form.fields.forEach((field: any) => {
+        initialData[field.name] = "";
+      });
+      setFormData(initialData);
+    }
+  }, [form]);
+
+  // Handle option selection
+  const handleOptionChange = (optionKey: string, value: string) => {
+    const newOptions = { ...selectedOptions, [optionKey]: value };
+    setSelectedOptions(newOptions);
+
+    // Find matching variant
+    const matchingVariant = currentProduct?.variants?.find((variant: any) => {
+      return Object.keys(newOptions).every(
+        (key) => variant.optionValues[key] === newOptions[key],
+      );
+    });
+
+    if (matchingVariant) {
+      setSelectedVariant(matchingVariant);
+    }
+  };
+
+  // Handle form field change
+  const handleFormChange = (fieldId: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [fieldId]: value }));
+    // Clear error for this field
+    if (formErrors[fieldId]) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldId];
+        return newErrors;
+      });
+    }
+  };
+
+  console.log(formData);
+
+  // Validate form
+  const validateForm = () => {
+    if (!form?.fields) return true;
+
+    const errors: Record<string, string> = {};
+    form.fields.forEach((field: any) => {
+      if (field.required && !formData[field.id]?.trim()) {
+        errors[field.id] = `${field.label} is required`;
+      }
+    });
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Get current price
+  const currentPrice = useMemo(() => {
+    if (selectedVariant) {
+      return `₹${parseInt(selectedVariant.price).toLocaleString("en-IN")}`;
+    }
+    return `₹${parseInt(currentProduct?.pricing?.price || 0).toLocaleString("en-IN")}`;
+  }, [selectedVariant, currentProduct]);
+
+  // Get compare at price
+  const compareAtPrice = useMemo(() => {
+    if (currentProduct?.pricing?.compareAtPrice) {
+      return `₹${parseInt(currentProduct.pricing.compareAtPrice).toLocaleString("en-IN")}`;
+    }
+    return null;
+  }, [currentProduct]);
+
+  // Calculate discount percentage
+  const discountPercentage = useMemo(() => {
+    if (
+      currentProduct?.pricing?.compareAtPrice &&
+      currentProduct?.pricing?.price
+    ) {
+      const original = parseInt(currentProduct.pricing.compareAtPrice);
+      const current = parseInt(currentProduct.pricing.price);
+      return Math.round(((original - current) / original) * 100);
+    }
+    return null;
+  }, [currentProduct]);
+
+  // Get stock status
+  const stockStatus = useMemo(() => {
+    if (selectedVariant) {
+      const stock = parseInt(selectedVariant.stock || 0);
+      if (stock === 0) return { text: "Out of Stock", color: "text-red-500" };
+      if (stock < 5)
+        return { text: `Only ${stock} left`, color: "text-orange-500" };
+      return { text: "In Stock", color: "text-green-500" };
+    }
+    return { text: "In Stock", color: "text-green-500" };
+  }, [selectedVariant]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  if (!product) {
+  if (!currentProduct) {
     return (
       <div className="container mx-auto px-[5%] py-32 text-center">
         <h1 className="text-4xl font-black mb-4">Product Not Found</h1>
-        <p className="text-muted font-bold mb-8">The product you are looking for does not exist or has been moved.</p>
-        <Link href="/shop" className="bg-primary text-white px-8 py-4 rounded-full font-black uppercase tracking-wider">
+        <p className="text-muted font-bold mb-8">
+          The product you are looking for does not exist or has been moved.
+        </p>
+        <Link
+          href="/shop"
+          className="bg-primary text-white px-8 py-4 rounded-full font-black uppercase tracking-wider"
+        >
           Back to Shop
         </Link>
       </div>
@@ -67,56 +258,76 @@ const ProductDetailPage = () => {
   };
 
   const handleAddToCart = () => {
-    const cartItem: any = {
-      ...product,
-      _id: String(product.id),
-      name: product.title,
+    // Validate form if it exists
+    if (form?.fields && !validateForm()) {
+      return;
+    }
+
+    const variantKey = composeVariantKey(selectedOptions || {});
+    const cartItemId = `${currentProduct._id}-${variantKey}`;
+
+    const productToAdd = {
+      ...currentProduct,
+      selectedVariant,
+      selectedOptions,
       quantity,
-      selectedOptions: {},
-      selectedVariant: { price: product.price.replace(/[^\d.]/g, '') },
-      cartItemId: `${product.id}-default`
+      cartItemId,
+      ...(form?.fields && { customization: formData }), // Add form data if form exists
     };
-    dispatch(addToCart(cartItem));
+
+    dispatch(addToCartAsync(productToAdd));
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };
 
   return (
-    <div className=" mx-auto px-[5%] pb-20">
+    <div className="mx-auto px-[5%] pb-20">
       {/* Breadcrumbs */}
       <div className="crumbs">
         <Link href="/">Home</Link> <span>›</span>
         <Link href="/shop">Shop</Link> <span>›</span>
-        {currentCategory && (
-          <>
-            <Link href={`/category/${currentCategory.id}`}>{product.category}</Link> <span>›</span>
-          </>
-        )}
-        <strong>{product.title}</strong>
+        {categoryPath.map((cat: any, idx: number) => (
+          <React.Fragment key={cat._id}>
+            <Link href={`/category/${cat.slug}`}>{cat.title}</Link>
+            {idx < categoryPath.length - 1 && <span>›</span>}
+          </React.Fragment>
+        ))}
+        {categoryPath.length > 0 && <span>›</span>}
+        <strong>{currentProduct.name}</strong>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_480px] gap-12 items-start">
         {/* LEFT: GALLERY */}
         <div className="space-y-4">
           <div className="relative aspect-[4/5] rounded-[32px] overflow-hidden border border-border bg-muted/5">
-            <div className="badge absolute top-6 left-6 z-10 dark:bg-surface/62 dark:border-secondary/18">{product.badge}</div>
-            <img 
-              src={product.img} 
-              alt={product.title} 
+            {discountPercentage && (
+              <div className="badge absolute top-6 left-6 z-10 dark:bg-surface/62 dark:border-secondary/18">
+                {discountPercentage}% OFF
+              </div>
+            )}
+            <img
+              src={galleryImages[selectedImage] || primaryImage}
+              alt={currentProduct.name}
               className="w-full h-full object-cover"
             />
           </div>
-          <div className="grid grid-cols-4 gap-4">
-            {[product.img, product.img, product.img, product.img].map((img, idx) => (
-              <button 
-                key={idx}
-                onClick={() => setSelectedImage(idx)}
-                className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all ${selectedImage === idx ? 'border-secondary shadow-md' : 'border-border hover:border-secondary/40'}`}
-              >
-                <img src={img} alt="" className="w-full h-full object-cover" />
-              </button>
-            ))}
-          </div>
+          {galleryImages.length > 1 && (
+            <div className="grid grid-cols-4 gap-4">
+              {galleryImages.slice(0, 4).map((img: string, idx: number) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedImage(idx)}
+                  className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all ${selectedImage === idx ? "border-secondary shadow-md" : "border-border hover:border-secondary/40"}`}
+                >
+                  <img
+                    src={img}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* RIGHT: INFO */}
@@ -124,94 +335,157 @@ const ProductDetailPage = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-start gap-4">
               <div>
-                <small className="text-secondary tracking-[3px] uppercase text-[10px] font-black mb-2 block">{product.category}</small>
-                <h1 className="text-[48px] font-black leading-[1.05] tracking-tight">{product.title}</h1>
+                <small className="text-secondary tracking-[3px] uppercase text-[10px] font-black mb-2 block">
+                  {primaryCategory}
+                </small>
+                <h1 className="text-[48px] font-black leading-[1.05] tracking-tight">
+                  {currentProduct.name}
+                </h1>
               </div>
               <button className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:bg-muted/10 transition-all shrink-0">
                 <Heart size={20} />
               </button>
             </div>
 
-            <div className="flex items-center gap-6">
-              <div className="text-[32px] font-black text-foreground/90">{product.price}</div>
-              <div className="h-6 w-px bg-border" />
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={14} className={i < Math.floor(product.rating) ? "text-secondary fill-secondary" : "text-border"} />
-                  ))}
+            <div className="flex items-center gap-6 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div className="text-[32px] font-black text-foreground/90">
+                  {currentPrice}
                 </div>
-                <span className="text-[11px] font-black uppercase tracking-[1px] text-muted">{product.rating.toFixed(1)} ({product.reviews} Reviews)</span>
+                {compareAtPrice && (
+                  <div className="text-[18px] font-bold text-muted line-through">
+                    {compareAtPrice}
+                  </div>
+                )}
+              </div>
+              <div
+                className={`text-[11px] font-black uppercase tracking-[1px] ${stockStatus.color}`}
+              >
+                {stockStatus.text}
               </div>
             </div>
+
+            {currentProduct.sku && (
+              <div className="text-[11px] font-black uppercase tracking-[1px] text-muted">
+                SKU: {selectedVariant?.sku || currentProduct.sku}
+              </div>
+            )}
           </div>
 
           <p className="text-muted font-bold leading-relaxed text-[15px]">
-            {product.description}
+            {currentProduct.description}
           </p>
 
-          {/* Options */}
-          <div className="space-y-6 py-6 border-y border-border/60">
-            <div className="space-y-3">
-              <label className="text-[11px] font-black uppercase tracking-[2px] text-foreground/70">Select Color</label>
-              <div className="flex gap-3">
-                {['#0D6533', '#98C45F', '#0B1610', '#55685B'].map((color, i) => (
-                  <button 
-                    key={i} 
-                    className={`w-10 h-10 rounded-full border-2 p-0.5 transition-all ${i === 0 ? 'border-secondary scale-110' : 'border-transparent hover:scale-105'}`}
-                  >
-                    <div className="w-full h-full rounded-full" style={{ backgroundColor: color }} />
-                  </button>
-                ))}
-              </div>
+          {/* Variant Options ONLY */}
+          {variantOptions.length > 0 && (
+            <div className="space-y-6 py-6 border-y border-border/60">
+              {variantOptions.map((option: any) => (
+                <div key={option.key} className="space-y-3">
+                  <label className="text-[11px] font-black uppercase tracking-[2px] text-foreground/70">
+                    Select {option.label}
+                  </label>
+                  <div className="flex flex-wrap gap-2.5">
+                    {option.selectedValues.map((value: string) => (
+                      <button
+                        key={value}
+                        onClick={() => handleOptionChange(option.key, value)}
+                        className={`h-11 px-6 rounded-xl border font-black text-[13px] transition-all ${
+                          selectedOptions[option.key] === value
+                            ? "border-secondary bg-secondary/10 text-secondary"
+                            : "border-border hover:border-secondary/40"
+                        }`}
+                      >
+                        {value}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
+          )}
 
-            <div className="space-y-3">
-              <label className="text-[11px] font-black uppercase tracking-[2px] text-foreground/70">Select Size</label>
-              <div className="flex flex-wrap gap-2.5">
-                {['Small', 'Medium', 'Large', 'Extra Large'].map((size, i) => (
-                  <button 
-                    key={size} 
-                    className={`h-11 px-6 rounded-xl border font-black text-[13px] transition-all ${i === 1 ? 'border-secondary bg-secondary/10 text-secondary' : 'border-border hover:border-secondary/40'}`}
-                  >
-                    {size}
-                  </button>
+          {/* Customization Form */}
+          {form?.fields && form.fields.length > 0 && (
+            <div className="space-y-6 py-6 border-y border-border/60">
+              <div className="flex items-center gap-2 mb-4">
+                <Edit3 size={16} className="text-secondary" />
+                <h3 className="text-[11px] font-black uppercase tracking-[2px] text-foreground/70">
+                  Customize Your Product
+                </h3>
+              </div>
+              <div className="space-y-4">
+                {form.fields.map((field: any) => (
+                  <div key={field.id} className="space-y-2">
+                    <label className="text-[11px] font-black uppercase tracking-[1px] text-foreground/60 flex items-center gap-1">
+                      {field.label}
+                      {field.required && (
+                        <span className="text-red-500">*</span>
+                      )}
+                    </label>
+                    {field.type === "text" && (
+                      <input
+                        type="text"
+                        value={formData[field.name] || ""}
+                        onChange={(e) =>
+                          handleFormChange(field.name, e.target.value)
+                        }
+                        placeholder={field.placeholder}
+                        className={`w-full h-11 px-4 rounded-xl border bg-surface text-sm font-medium transition-all ${
+                          formErrors[field.name]
+                            ? "border-red-500"
+                            : "border-border focus:border-secondary"
+                        } focus:outline-none`}
+                      />
+                    )}
+                    {formErrors[field.id] && (
+                      <p className="text-red-500 text-xs font-bold">
+                        {formErrors[field.id]}
+                      </p>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
-          </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-4">
             <div className="flex items-center h-14 rounded-full border border-border bg-surface px-2">
-              <button 
+              <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted/10 transition-all"
               >
                 <Minus size={16} />
               </button>
-              <span className="w-10 text-center font-black text-sm">{quantity}</span>
-              <button 
+              <span className="w-10 text-center font-black text-sm">
+                {quantity}
+              </span>
+              <button
                 onClick={() => setQuantity(quantity + 1)}
                 className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted/10 transition-all"
               >
                 <Plus size={16} />
               </button>
             </div>
-            <button 
+            <button
               onClick={handleAddToCart}
+              disabled={stockStatus.text === "Out of Stock"}
               className={`flex-1 h-14 rounded-full text-xs font-black uppercase tracking-[2px] shadow-lg transition-all flex items-center justify-center gap-2 ${
-                isAdded 
-                  ? 'bg-emerald-600 text-white shadow-emerald-600/20' 
-                  : 'bg-primary text-white shadow-primary/20 hover:bg-primary/90 hover:-translate-y-0.5'
+                stockStatus.text === "Out of Stock"
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : isAdded
+                    ? "bg-emerald-600 text-white shadow-emerald-600/20"
+                    : "bg-primary text-white shadow-primary/20 hover:bg-primary/90 hover:-translate-y-0.5"
               }`}
             >
-              {isAdded ? (
+              {stockStatus.text === "Out of Stock" ? (
+                "Out of Stock"
+              ) : isAdded ? (
                 <>
                   <Check size={18} /> Added to Bag
                 </>
               ) : (
-                <>Add to Bag — {product.price}</>
+                <>Add to Bag — {currentPrice}</>
               )}
             </button>
           </div>
@@ -219,26 +493,51 @@ const ProductDetailPage = () => {
           {/* Accordions */}
           <div className="space-y-px bg-border rounded-2xl overflow-hidden border border-border">
             {[
-              { id: 'details', title: 'Product Details', icon: <Info size={18} />, content: 'Handcrafted with precision using sustainable materials. Features a durable frame and premium upholstery designed for long-lasting comfort.' },
-              { id: 'shipping', title: 'Shipping Info', icon: <Truck size={18} />, content: 'Free standard shipping on all orders over $500. Delivered within 5-7 business days with real-time tracking.' },
-              { id: 'returns', title: 'Returns & Warranty', icon: <RotateCcw size={18} />, content: '30-day hassle-free returns and a 2-year comprehensive warranty on all structural components.' }
+              {
+                id: "details",
+                title: "Product Details",
+                icon: <Info size={18} />,
+                content:
+                  currentProduct.description ||
+                  "Handcrafted with precision using sustainable materials. Features a durable frame and premium upholstery designed for long-lasting comfort.",
+              },
+              {
+                id: "shipping",
+                title: "Shipping Info",
+                icon: <Truck size={18} />,
+                content:
+                  "Free standard shipping on all orders over ₹25,000. Delivered within 5-7 business days with real-time tracking.",
+              },
+              {
+                id: "returns",
+                title: "Returns & Warranty",
+                icon: <RotateCcw size={18} />,
+                content:
+                  "30-day hassle-free returns and a 2-year comprehensive warranty on all structural components.",
+              },
             ].map((item) => (
               <div key={item.id} className="bg-surface">
-                <button 
+                <button
                   onClick={() => toggleAccordion(item.id)}
                   className="w-full p-5 flex items-center justify-between gap-4 hover:bg-muted/5 transition-all"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-secondary">{item.icon}</span>
-                    <span className="text-[13px] font-black uppercase tracking-[1px]">{item.title}</span>
+                    <span className="text-[13px] font-black uppercase tracking-[1px]">
+                      {item.title}
+                    </span>
                   </div>
-                  {openAccordion === item.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  {openAccordion === item.id ? (
+                    <ChevronUp size={18} />
+                  ) : (
+                    <ChevronDown size={18} />
+                  )}
                 </button>
                 <AnimatePresence>
                   {openAccordion === item.id && (
-                    <motion.div 
+                    <motion.div
                       initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
+                      animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden"
                     >
@@ -257,31 +556,47 @@ const ProductDetailPage = () => {
       {/* Tabs Section */}
       <section className="mt-24">
         <div className="flex border-b border-border mb-10 overflow-x-auto no-scrollbar">
-          {['overview', 'specifications', 'reviews'].map((tab) => (
+          {["overview", "specifications", "reviews"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-8 py-4 text-[11px] font-black uppercase tracking-[2px] transition-all relative whitespace-nowrap ${activeTab === tab ? 'text-secondary' : 'text-muted hover:text-foreground'}`}
+              className={`px-8 py-4 text-[11px] font-black uppercase tracking-[2px] transition-all relative whitespace-nowrap ${activeTab === tab ? "text-secondary" : "text-muted hover:text-foreground"}`}
             >
               {tab}
               {activeTab === tab && (
-                <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary" />
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary"
+                />
               )}
             </button>
           ))}
         </div>
 
         <div className="min-h-[300px]">
-          {activeTab === 'overview' && (
+          {activeTab === "overview" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div className="space-y-6">
-                <h2 className="text-[42px] font-black leading-[1.1]">Crafted for Modern Living</h2>
+                <h2 className="text-[42px] font-black leading-[1.1]">
+                  Crafted for Modern Living
+                </h2>
                 <p className="text-muted font-bold text-lg leading-relaxed">
-                  Our {product.title} is more than just a piece of furniture; it's a statement of style and a commitment to quality. Every detail has been carefully considered to provide you with the best possible experience.
+                  Our {currentProduct.name} is more than just a piece of
+                  furniture; it's a statement of style and a commitment to
+                  quality. Every detail has been carefully considered to provide
+                  you with the best possible experience.
                 </p>
                 <ul className="space-y-4">
-                  {['Sustainable Materials', 'Ergonomic Design', 'Hand-Finished Details', 'Easy Assembly'].map((feature) => (
-                    <li key={feature} className="flex items-center gap-3 font-bold text-foreground/80">
+                  {[
+                    "Premium Quality Materials",
+                    "Ergonomic Design",
+                    "Expert Craftsmanship",
+                    "Easy Assembly",
+                  ].map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-center gap-3 font-bold text-foreground/80"
+                    >
                       <div className="w-2 h-2 rounded-full bg-secondary" />
                       {feature}
                     </li>
@@ -289,105 +604,126 @@ const ProductDetailPage = () => {
                 </ul>
               </div>
               <div className="rounded-[32px] overflow-hidden aspect-video border border-border">
-                <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80&w=1200" alt="Detail" className="w-full h-full object-cover" />
+                <img
+                  src={galleryImages[1] || primaryImage}
+                  alt="Detail"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
           )}
 
-          {activeTab === 'specifications' && (
-            <div className="max-w-3xl mx-auto space-y-4">
-              {[
-                { label: 'Dimensions', value: '80cm x 75cm x 85cm' },
-                { label: 'Weight', value: '12kg' },
-                { label: 'Material', value: 'Solid Oak, Premium Suede' },
-                { label: 'Assembly', value: 'Partial Assembly Required' },
-                { label: 'Origin', value: 'Handcrafted in India' }
-              ].map((spec) => (
-                <div key={spec.label} className="flex justify-between p-4 border-b border-border/50">
-                  <span className="text-[11px] font-black uppercase tracking-[2px] text-muted">{spec.label}</span>
-                  <span className="font-bold">{spec.value}</span>
+          {activeTab === "specifications" && (
+            <div className="max-w-3xl mx-auto space-y-8">
+              {/* Basic Product Info */}
+              <div className="space-y-4">
+                <h3 className="text-[11px] font-black uppercase tracking-[2px] text-secondary mb-4">
+                  Product Information
+                </h3>
+                {[
+                  { label: "Product Type", value: currentProduct.type },
+                  { label: "SKU", value: currentProduct.sku },
+                  { label: "Status", value: currentProduct.status },
+                ].map((spec) => (
+                  <div
+                    key={spec.label}
+                    className="flex justify-between p-4 border-b border-border/50"
+                  >
+                    <span className="text-[11px] font-black uppercase tracking-[2px] text-muted">
+                      {spec.label}
+                    </span>
+                    <span className="font-bold capitalize">{spec.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Grouped Options by Attribute Set */}
+              {Object.keys(groupedOptions).map((attributeSetId) => (
+                <div key={attributeSetId} className="space-y-4">
+                  <h3 className="text-[11px] font-black uppercase tracking-[2px] text-secondary mb-4">
+                    {attributeSetId
+                      .split("-")
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1),
+                      )
+                      .join(" ")}
+                  </h3>
+                  {groupedOptions[attributeSetId].map((option: any) => (
+                    <div
+                      key={option.key}
+                      className="flex justify-between p-4 border-b border-border/50"
+                    >
+                      <span className="text-[11px] font-black uppercase tracking-[2px] text-muted">
+                        {option.label}
+                      </span>
+                      <span className="font-bold capitalize">
+                        {option.selectedValues.join(", ")}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
           )}
 
-          {activeTab === 'reviews' && (
+          {activeTab === "reviews" && (
             <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-12">
               <div className="space-y-6">
                 <div className="p-8 rounded-3xl border border-border bg-surface text-center space-y-2">
-                  <div className="text-[64px] font-black leading-none">{product.rating.toFixed(1)}</div>
+                  <div className="text-[64px] font-black leading-none">4.8</div>
                   <div className="flex justify-center gap-1">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={20} className={i < Math.floor(product.rating) ? "text-secondary fill-secondary" : "text-border"} />
+                      <Star
+                        key={i}
+                        size={20}
+                        className={
+                          i < 4
+                            ? "text-secondary fill-secondary"
+                            : "text-border"
+                        }
+                      />
                     ))}
                   </div>
-                  <p className="text-[11px] font-black uppercase tracking-[2px] text-muted">Based on {product.reviews} reviews</p>
+                  <p className="text-[11px] font-black uppercase tracking-[2px] text-muted">
+                    Based on customer reviews
+                  </p>
                 </div>
                 <button className="w-full h-14 rounded-full border border-secondary text-secondary font-black text-xs uppercase tracking-[2px] hover:bg-secondary hover:text-white transition-all">
                   Write a Review
                 </button>
               </div>
               <div className="space-y-8">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="space-y-4 pb-8 border-b border-border/50">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-muted/10 flex items-center justify-center font-black text-xs">JD</div>
-                        <div>
-                          <div className="font-bold text-sm">John Doe</div>
-                          <div className="text-[10px] uppercase tracking-[1px] text-muted">Verified Buyer</div>
-                        </div>
-                      </div>
-                      <div className="flex gap-0.5">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={12} className="text-secondary fill-secondary" />
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-muted font-bold leading-relaxed">
-                      Absolutely love this chair! The quality is outstanding and it looks even better in person. Extremely comfortable and fits perfectly in my living room.
-                    </p>
-                  </div>
-                ))}
+                <div className="text-center text-muted font-bold py-12">
+                  No reviews yet. Be the first to review this product!
+                </div>
               </div>
             </div>
           )}
         </div>
       </section>
 
-      {/* Related Products */}
-      <section className="mt-32">
-        <div className="flex justify-between items-end mb-10">
-          <div>
-            <small className="text-secondary tracking-[3px] uppercase text-[10px] font-black mb-2 block">Curated for you</small>
-            <h2 className="text-[42px] font-black leading-[1.1]">Related Products</h2>
-          </div>
-          <Link href="/categories" className="text-[11px] font-black uppercase tracking-[2px] text-secondary border-b border-secondary pb-1 hover:opacity-70 transition-all">
-            View All
-          </Link>
-        </div>
-          {relatedProducts.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((p) => (
-                <Link key={p.id} href={`/product/${p.id}`} className="product-card group">
-                  <div className="badge dark:bg-surface/62 dark:border-secondary/18">{p.badge}</div>
-                  <div className="img-wrap">
-                    <img src={p.img} alt={p.title} />
-                  </div>
-                  <div className="card-body">
-                    <div className="font-heading text-[26px] font-black leading-[1.05] mb-2.5 text-foreground/92">{p.title}</div>
-                    <div className="flex justify-between items-center gap-2.5 flex-wrap font-black tracking-[1px] text-foreground/75">
-                      <span className="text-muted/92 text-[13px] uppercase tracking-[2px]">{p.price}</span>
-                      <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[2px] text-muted/92 whitespace-nowrap">
-                        <Star size={12} className="text-secondary fill-secondary" /> {p.rating.toFixed(1)}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+      {/* Related Products - You can fetch these based on relatedProductIds */}
+      {currentProduct.relatedProductIds?.length > 0 && (
+        <section className="mt-32">
+          <div className="flex justify-between items-end mb-10">
+            <div>
+              <small className="text-secondary tracking-[3px] uppercase text-[10px] font-black mb-2 block">
+                Curated for you
+              </small>
+              <h2 className="text-[42px] font-black leading-[1.1]">
+                Related Products
+              </h2>
             </div>
-          )}
-      </section>
+            <Link
+              href="/categories"
+              className="text-[11px] font-black uppercase tracking-[2px] text-secondary border-b border-secondary pb-1 hover:opacity-70 transition-all"
+            >
+              View All
+            </Link>
+          </div>
+          {/* Add related products grid here */}
+        </section>
+      )}
     </div>
   );
 };

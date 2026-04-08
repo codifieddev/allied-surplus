@@ -15,6 +15,8 @@ interface PublicationSidebarProps {
   onFormChange: (field: string, value: any) => void;
   onToggleCategory: (id: string) => void;
   onToggleRelatedProduct: (id: string) => void;
+  allForms: any[];
+  formId: string;
 }
 
 export const PublicationSidebar: React.FC<PublicationSidebarProps> = ({
@@ -28,6 +30,8 @@ export const PublicationSidebar: React.FC<PublicationSidebarProps> = ({
   onFormChange,
   onToggleCategory,
   onToggleRelatedProduct,
+  allForms,
+  formId,
 }) => {
   return (
     <div className="space-y-6">
@@ -123,6 +127,35 @@ export const PublicationSidebar: React.FC<PublicationSidebarProps> = ({
                 <span className={`text-[10px] font-black uppercase tracking-widest ${relatedProductIds.includes(p._id) ? "text-white" : "text-white/30"}`}>{p.name}</span>
              </label>
            ))}
+        </div>
+      </div>
+
+      {/* Custom Form Integration */}
+      <div className="bg-charcoal border border-white/5 rounded-sm p-6 space-y-6 shadow-2xl shadow-black/40">
+        <div className="flex items-center gap-4 border-l-2 border-gold pl-4">
+          <Zap size={18} className="text-gold" />
+          <h3 className="text-sm font-black text-white uppercase tracking-[0.2em]">Custom Intelligence</h3>
+        </div>
+
+        <div className="space-y-4">
+          <label className="block space-y-2">
+            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest italic">Attach Matrix Node</span>
+            <select 
+              value={formId}
+              onChange={(e) => onFormChange("formId", e.target.value)}
+              className="w-full bg-ink border border-white/10 rounded-sm p-3 text-[10px] font-black uppercase tracking-widest text-gold italic focus:border-gold/50 outline-none transition-all"
+            >
+              <option value="">NO FORM ATTACHED</option>
+              {allForms.map((f: any) => (
+                <option key={f._id} value={f._id}>{f.name.toUpperCase()}</option>
+              ))}
+            </select>
+          </label>
+          <div className="p-3 bg-gold/5 border border-gold/10 rounded-sm">
+             <p className="text-[8px] text-white/30 uppercase leading-relaxed font-bold tracking-tighter">
+                Linked forms enable data capture during deployment (Custom Product Build).
+             </p>
+          </div>
         </div>
       </div>
     </div>
