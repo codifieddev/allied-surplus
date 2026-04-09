@@ -7,7 +7,7 @@ import { ObjectId } from "mongodb";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const getSessionId = async () => {
+export const getSessionId = async () => {
   const cookieStore = await cookies();
   let sessionId = cookieStore.get("cart_session_id")?.value;
   if (!sessionId) {
@@ -22,7 +22,7 @@ const getSessionId = async () => {
   return sessionId;
 };
 
-const getUserId = async () => {
+export const getUserId = async () => {
   const cookieStore = await cookies();
   let userId = cookieStore.get("kalp_session")?.value;
   if (!userId || !JWT_SECRET) return null;

@@ -307,7 +307,20 @@ export default function OrderManagement() {
     (state: RootState) => state.adminProducts,
   );
 
-  console.log(allProducts);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/ecommerce/orders");
+        const data = await res.json();
+        if (data.success) {
+          const prevOrders = structuredClone(orders);
+          setOrders([...prevOrders, ...data.data]);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
 
   // Filter orders
   const filteredOrders = orders.filter(

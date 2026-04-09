@@ -54,3 +54,8 @@ export const getFormSubmissionModel = async () => {
   const db = await connectTenantDB();
   return db.collection("form_submissions");
 };
+
+export const getTenantRegistryModel = async () => {
+  const db = await connectTenantDB();
+  return db.collection("tenant_registry");
+};

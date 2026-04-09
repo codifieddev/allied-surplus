@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { MediaUploader } from "./MediaManage";
 import { Button } from "@/components/ui/button";
 import { ImageIcon, X, Layers } from "lucide-react";
@@ -40,21 +40,9 @@ export const MediaLibraryModal = ({
   };
 
   return (
-    <>
-      {/* <div onClick={() => setOpen(true)} className="cursor-pointer">
-        {trigger || (
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-10 w-10 bg-charcoal border-charcoal-light text-gold hover:bg-gold hover:text-ink transition-all rounded-none"
-          >
-            <ImageIcon size={18} />
-          </Button>
-        )}
-      </div> */}
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="!max-w-6xl overflow-y-auto  !h-[80vh] bg-ink">
+    <Dialog open={open} onOpenChange={setOpen}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+      <DialogContent className="!max-w-6xl overflow-y-auto  !h-[80vh] bg-ink">
           <div className="bg-charcoal h-full flex flex-col border border-charcoal-light">
             <div className="flex items-center justify-between p-6 border-b border-charcoal-light bg-ink">
               <div className="flex items-center gap-4">
@@ -73,6 +61,5 @@ export const MediaLibraryModal = ({
           <MediaUploader onSelect={handleSelect} hideHeader={true} />
         </DialogContent>
       </Dialog>
-    </>
   );
 };
