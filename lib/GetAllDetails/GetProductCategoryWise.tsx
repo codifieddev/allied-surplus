@@ -19,8 +19,9 @@ export default function GetAllProducts() {
     (state: RootState) => state.adminProducts,
   );
 
-  const dispatch = useDispatch<AppDispatch>();
+  console.log(allProducts);
 
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     if (!id) return;

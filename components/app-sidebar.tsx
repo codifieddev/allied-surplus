@@ -52,6 +52,7 @@ import { useDispatch } from "react-redux";
 import { logout } from "@/lib/store/auth/authSlice";
 import { logoutThunk } from "@/lib/store/auth/authThunks";
 import { AppDispatch } from "@/lib/store/store";
+import Image from "next/image";
 
 const NAV_ITEMS = [
   {
@@ -69,7 +70,14 @@ const NAV_ITEMS = [
         href: "/admin/orders",
         icon: ShoppingCart,
         exact: false,
-        badge: "3",
+        // badge: "3",
+      },
+      {
+        label: "Branding",
+        href: "/admin/branding",
+        icon: Sparkles,
+        exact: false,
+        badge: null,
       },
     ],
   },
@@ -188,12 +196,18 @@ export function AppSidebar() {
       <SidebarHeader className="p-0 bg-olive border-b-2 border-gold shadow-2xl relative overflow-hidden group">
         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
         <div className="h-20 flex px-4 items-center justify-start gap-3 relative z-10">
-          <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-ink/30 border border-gold/40 shadow-2xl ring-1 ring-gold/20">
-            <Shield size={20} className="text-gold" strokeWidth={2.5} />
+          <div className="object-contain flex items-center justify-center rounded-sm bg-ink/30 border border-gold/40 shadow-2xl ring-1 ring-gold/20">
+            <Image
+              src="/assets/Image/footer-logo-2.webp"
+              alt="Footer Logo"
+              width={80}
+              height={60}
+              className=""
+            />
           </div>
           <div className="flex flex-col">
             <h2 className="text-base font-head font-black tracking-widest text-white uppercase leading-none italic">
-              IRONFORGE
+              Allied Surplus
             </h2>
             <span className="text-[9px] font-black text-ink uppercase tracking-[0.4em] italic mt-0.5">
               Admin Console

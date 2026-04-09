@@ -31,8 +31,7 @@ const heroSlides = [
       "Combat-tested boots and tactical footwear from Belleville, Bates, Reebok, and Propper. Berry compliant, waterproof and field-ready.",
     buttonText: "Shop Footwear",
     buttonLink: "/shop",
-    image:
-      "https://alliedsurplus.com/wp-content/uploads/2019/10/Reebok2.jpg",
+    image: "https://alliedsurplus.com/wp-content/uploads/2019/10/Reebok2.jpg",
   },
 ];
 
@@ -58,7 +57,9 @@ export default function HeroSection({ showToast }: HeroSectionProps) {
   };
 
   const prevSlide = () => {
-    setActiveSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+    setActiveSlide(
+      (prev) => (prev - 1 + heroSlides.length) % heroSlides.length,
+    );
   };
 
   return (
@@ -105,7 +106,7 @@ export default function HeroSection({ showToast }: HeroSectionProps) {
                       {/* {heroSlides[activeSlide].buttonText} */}
                       CUSTOMIZE NOW
                     </Link>
-                     <Link
+                    <Link
                       href={heroSlides[activeSlide].buttonLink}
                       className="ms-4 inline-flex items-center justify-center rounded-none bg-transprant  px-8 py-4 text-md font-semibold text-white transition hover:bg-white/10 border border-white"
                     >
@@ -145,7 +146,7 @@ export default function HeroSection({ showToast }: HeroSectionProps) {
                 "h-2.5 w-2.5 rounded-full transition-all",
                 activeSlide === index
                   ? "bg-white w-7"
-                  : "bg-white/50 hover:bg-white/80"
+                  : "bg-white/50 hover:bg-white/80",
               )}
             />
           ))}

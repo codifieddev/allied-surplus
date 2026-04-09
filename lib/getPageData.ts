@@ -52,3 +52,12 @@ export const getSingleForm = cache(async (id: string) => {
 
   return serialize(form);
 });
+
+export const getTenantRegistry = cache(async () => {
+  const db = await connectTenantDB();
+  const tenantRegistry = db.collection("tenant_registry");
+
+  const tenant = await tenantRegistry.findOne({ type: "branding" });
+
+  return serialize(tenant);
+});

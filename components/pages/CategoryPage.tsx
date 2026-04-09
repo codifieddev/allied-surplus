@@ -904,7 +904,9 @@ const CategoryPage = () => {
     setCurrentPage(1);
   };
 
-  if (categoryLoading || loading) {
+  const mainloading = categoryLoading || loading;
+
+  if (mainloading) {
     return <LoadingState />;
   }
 
