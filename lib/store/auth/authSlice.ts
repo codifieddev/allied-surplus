@@ -6,13 +6,34 @@ import {
   signupThunk,
 } from "./authThunks";
 
+export type Address = {
+  _id?: string;
+  label: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  street: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  isDefault?: boolean;
+};
+
 interface User {
-  userName?: string;
+  username?: string;
   password?: string;
   role?: string;
   email?: string;
   id?: string;
   _id?: string;
+  address?: Address[];
+  name?: string;
+  wishlist?: string[];
+  isTenantOwner?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface AuthState {
@@ -52,6 +73,12 @@ const authSlice = createSlice({
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
       state.isLoading = false;
+    },
+    updateAddress: (state, action: PayloadAction<Address[]>) => {
+      state.user!.address = action.payload;
+    },
+    updateProfile: (state, action: PayloadAction<User>) => {
+      state.user = { ...state.user, ...action.payload };
     },
   },
   extraReducers: (builder) => {
@@ -113,6 +140,12 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, logout, setLoading, setError } =
-  authSlice.actions;
+export const {
+  setCredentials,
+  updateProfile,
+  logout,
+  setLoading,
+  setError,
+  updateAddress,
+} = authSlice.actions;
 export default authSlice.reducer;

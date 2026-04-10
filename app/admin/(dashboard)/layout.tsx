@@ -24,7 +24,6 @@ import GetAllProducts from "@/lib/GetAllDetails/GetAllProducts";
 import GetCart from "@/lib/GetAllDetails/GetCart";
 import GetUser from "@/lib/GetAllDetails/GetUser";
 import GetAllForms from "@/lib/GetAllDetails/GetAllForms";
-import GetProductCategoryWise from "@/lib/GetAllDetails/GetProductCategoryWise";
 
 const JWT_SECRET =
   process.env.JWT_SECRET || "default_jwt_secret_change_me_in_prod";
@@ -65,7 +64,7 @@ export default async function DashboardLayout({
       <GetAllProducts />
       <GetCart />
       <GetAllForms />
-      <GetProductCategoryWise />
+
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="bg-ink flex flex-col min-w-0 min-h-screen">

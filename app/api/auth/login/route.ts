@@ -12,6 +12,8 @@ export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
 
+    console.log(email, password);
+
     if (!email || !password) {
       return NextResponse.json(
         { success: false, message: "Email and password are required" },
@@ -47,14 +49,27 @@ export async function POST(req: NextRequest) {
 
     const { password: userPassword, ...userWithoutPassword } = user;
 
+    const forCustomer = {
+      id: user._id.toString(),
+      email: user.email,
+      role: user.role || "customer",
+      name: user.name,
+      wishlist: user.wishlist ? user.wishlist : [],
+      address: user.address ? user.address : [],
+      username: user.username,
+    };
+
+    const forAdmin = {
+      id: user._id.toString(),
+      email: user.email,
+      role: user.role || "admin",
+      isTenantOwner: user.isTenantOwner,
+      name: user.name,
+      username: user.username ? user.username : "",
+    };
+
     const token = jwt.sign(
-      {
-        id: user._id.toString(),
-        email: user.email,
-        role: user.role || "admin",
-        isTenantOwner: user.isTenantOwner,
-        name: user.name,
-      },
+      user.role === "admin" ? forAdmin : forCustomer,
       JWT_SECRET,
       { expiresIn: "1d" },
     );

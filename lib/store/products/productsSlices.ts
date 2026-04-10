@@ -81,7 +81,7 @@ const initialFormState: ProductFormState = {
 const initialState: ProductsState = {
   allProducts: [],
   currentProduct: initialFormState,
-  loading: false,
+  loading: true,
   saving: false,
   error: null,
   hasFetched: false,
@@ -120,6 +120,9 @@ const productsSlice = createSlice({
     },
     setCurrentProduct: (state, action: PayloadAction<ProductFormState>) => {
       state.currentProduct = action.payload;
+    },
+    setProduct: (state, action: PayloadAction<ProductFormState>) => {
+      state.allProducts.push(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -252,6 +255,7 @@ export const {
   resetProductForm,
   setProductForm,
   setCurrentProduct,
+  setProduct,
 } = productsSlice.actions;
 
 export default productsSlice.reducer;
