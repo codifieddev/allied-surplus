@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/lib/store/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/lib/store/store";
 import { loginThunk } from "@/lib/store/auth/authThunks";
 import { toast } from "sonner";
 import {
@@ -25,6 +25,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
+  if (isAuthenticated) {
+    router.push("/");
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,11 +37,11 @@ export default function LoginPage() {
 
     try {
       await dispatch(loginThunk({ email, password })).unwrap();
-      toast.success("Authentication successful. Entry permitted.");
+      toast.success("Login successful. Welcome back!");
       router.push("/");
       // router.refresh();
     } catch (err: any) {
-      toast.error(err || "Access Denied: Invalid override credentials.");
+      toast.error(err || "Login failed: Invalid email or password.");
     } finally {
       setLoading(false);
     }
@@ -72,12 +77,12 @@ export default function LoginPage() {
 
           <div className="space-y-6 max-w-sm">
             <h2 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">
-              Command & <br />
-              Control Center
+              Welcome <br />
+              Back
             </h2>
             <p className="text-sm font-medium text-slate-400 italic leading-relaxed">
-              Unified terminal for procurement, inventory logistics, and
-              mission-critical e-commerce operations. Authorized personnel only.
+              Login to access your personalized dashboard, track your orders,
+              and manage mission-ready gear.
             </p>
           </div>
         </div>
@@ -100,17 +105,17 @@ export default function LoginPage() {
               </div>
             </div>
             <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">
-              Gatehouse <span className="text-slate-400">Access</span>
+              Sign <span className="text-slate-400">In</span>
             </h1>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">
-              Provide secure identification to initiate session.
+              Please enter your credentials to access your account.
             </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-black ml-1 flex items-center gap-2 ">
-                <Mail size={12} className="text-emerald-600" /> Intel Address
+                <Mail size={12} className="text-emerald-600" /> Email Address
               </label>
               <Input
                 type="email"
@@ -118,15 +123,14 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="!placeholder:text-black !placeholder:opacity-100 text-black h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic placeholder:font-normal"
-                placeholder="ENTER INTEL ADDRESS"
+                placeholder="ENTER EMAIL ADDRESS"
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center ml-1">
                 <label className="text-[10px] font-black uppercase tracking-widest text-black flex items-center gap-2">
-                  <Lock size={12} className="text-emerald-600" /> Secure
-                  Phrasing
+                  <Lock size={12} className="text-emerald-600" /> Password
                 </label>
 
                 <button
@@ -142,7 +146,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="!placeholder:text-black !placeholder:opacity-100 h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic"
-                placeholder="ENTER SECURE PHRASE"
+                placeholder="ENTER PASSWORD"
               />
             </div>
 
@@ -155,7 +159,7 @@ export default function LoginPage() {
                 <RefreshCw size={18} className="animate-spin" />
               ) : (
                 <>
-                  Initiate Sequence{" "}
+                  Sign In{" "}
                   <ArrowRight
                     size={16}
                     className="group-hover:translate-x-1 transition-transform"
@@ -169,7 +173,7 @@ export default function LoginPage() {
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
               Need access?{" "}
               <Link href="/signup" className="text-emerald-600 hover:underline">
-                Apply for Recruitment
+                Create an Account
               </Link>
             </p>
           </div>

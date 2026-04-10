@@ -207,7 +207,7 @@ export default function HomePage() {
                       </span>
                     </div>
                     <button
-                      onClick={() => showToast("Added to tactical unit")}
+                      onClick={() => showToast("Added to cart")}
                       className="bg-olive text-white font-head text-[11px] font-bold tracking-widest uppercase px-4 py-2.5 rounded-[2px] hover:bg-olive-lt transition-all"
                     >
                       Add To Cart
@@ -227,11 +227,10 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
             <div className="space-y-2">
               <div className="flex items-center gap-2 font-head text-[11px] font-bold tracking-[0.25em] text-gold uppercase">
-                <div className="h-0.5 w-8 bg-gold" /> TAXONOMY TREE
+                <div className="h-0.5 w-8 bg-gold" /> EXPLORE CATEGORIES
               </div>
               <h2 className="font-head text-[42px] font-extrabold tracking-[0.02em] text-white uppercase italic leading-none">
-                Intelligence{" "}
-                <span className="text-gold not-italic">Network</span>
+                Product <span className="text-gold not-italic">Categories</span>
               </h2>
             </div>
           </div>
@@ -263,7 +262,7 @@ export default function HomePage() {
                     kits designed for peak performance in any environment.
                   </p>
                   <div className="pt-2 flex items-center gap-2.5 font-head text-[12px] font-bold tracking-[0.2em] text-gold uppercase">
-                    ESTABLISH LINKAGE{" "}
+                    VIEW CATEGORY{" "}
                     <ChevronRight
                       size={14}
                       className="group-hover:translate-x-1.5 transition-transform"
@@ -488,11 +487,11 @@ export default function HomePage() {
               <h2 className="font-head text-[56px] md:text-[68px] font-extrabold text-white uppercase leading-[0.9] tracking-tight">
                 JOIN THE <br />
                 IRONFORGE <br />
-                REGIMENT
+                COMMUNITY
               </h2>
               <p className="text-white/80 text-[16px] leading-relaxed max-w-[480px]">
-                Get exclusive access to new arrivals, tactical intel,
-                field-tested reviews, and member-only discounts delivered
+                Get exclusive access to new arrivals, product reviews, 
+                field-tested guides, and member-only discounts delivered
                 straight to your inbox.
               </p>
             </div>
@@ -502,7 +501,7 @@ export default function HomePage() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  showToast("Signal encrypted. Inbound confirmed.");
+                  showToast("Subscription successful. Welcome!");
                 }}
                 className="space-y-4"
               >

@@ -11,7 +11,7 @@ export default function GetAllCategories({
 }: {
   type?: string;
 }) {
-  const { categoryLoading, hasCategoriesFetched } = useSelector(
+  const { hasCategoriesFetched } = useSelector(
     (state: RootState) => state.adminCategories,
   );
 
@@ -22,10 +22,10 @@ export default function GetAllCategories({
   useEffect(() => {
     if (!user && type == "admin") return;
 
-    if (!hasCategoriesFetched && !categoryLoading) {
+    if (!hasCategoriesFetched) {
       dispatch(fetchCategories({}));
     }
-  }, [user, hasCategoriesFetched, categoryLoading]);
+  }, [user, hasCategoriesFetched]);
 
   return null;
 }

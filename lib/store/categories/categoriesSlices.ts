@@ -32,7 +32,7 @@ type CategoryState = {
 
 const initialState: CategoryState = {
   allCategories: [],
-  categoryLoading: false,
+  categoryLoading: true,
   categoryError: null,
   hasCategoriesFetched: false,
 };

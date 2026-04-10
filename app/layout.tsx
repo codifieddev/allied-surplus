@@ -7,6 +7,9 @@ import { AnnotatorPlugin } from "@/components/annotationPlugin";
 import { Barlow, Barlow_Condensed } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { getTenantRegistry } from "@/lib/getPageData";
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
+import GetUser from "@/lib/GetAllDetails/GetUser";
 
 const barlow = Barlow({
   subsets: ["latin"],
@@ -31,10 +34,31 @@ export const metadata: Metadata = {
   },
 };
 
+const JWT_SECRET =
+  process.env.JWT_SECRET || "default_jwt_secret_change_me_in_prod";
+
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const tenantRegistry = await getTenantRegistry();
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+
+  let isAuthenticated = false;
+
+  let user: any = null;
+
+  if (token) {
+    try {
+      let check = jwt.verify(token, JWT_SECRET);
+      if (check) {
+        isAuthenticated = true;
+        user = jwt.decode(token);
+      }
+    } catch (e) {
+      isAuthenticated = false;
+    }
+  }
 
   return (
     <html
@@ -45,6 +69,7 @@ export default async function RootLayout({
       <body>
         <StoreProvider>
           <Providers>
+            <GetUser user={user} />
             <LayoutWrapper brandConfig={tenantRegistry}>
               {children}
             </LayoutWrapper>

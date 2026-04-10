@@ -1,8 +1,10 @@
 import Component from "@/components/pages/CategoryPage";
+import GetProductCategoryWise from "@/lib/GetAllDetails/GetProductCategoryWise";
 
-export default function Page() {
+export default async function Page() {
   return (
     <>
+      <GetProductCategoryWise />
       <Component />
     </>
   );

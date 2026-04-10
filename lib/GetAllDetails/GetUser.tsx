@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../store/store";
 import { setCredentials } from "../store/auth/authSlice";
+import { setLoading } from "../store/pages/pagesSlice";
 
 export default function GetUser({ user }: { user: any }) {
   const dispatch = useDispatch<AppDispatch>();

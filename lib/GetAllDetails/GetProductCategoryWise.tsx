@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
@@ -15,11 +15,10 @@ function checkIsFetched(arr: any[], id: string) {
 
 export default function GetAllProducts() {
   const { id } = useParams<{ id: string }>();
+
   const { allProducts } = useSelector(
     (state: RootState) => state.adminProducts,
   );
-
-  console.log(allProducts);
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -29,7 +28,7 @@ export default function GetAllProducts() {
       return;
     }
     dispatch(fetchProductsByCategory(id));
-  }, [id, allProducts, dispatch]);
+  }, [id, allProducts]);
 
   return null;
 }
