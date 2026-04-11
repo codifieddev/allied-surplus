@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 
 import {
   Star,
   Search,
-  Plus,
   ChevronRight,
   Filter,
   Heart,
@@ -14,12 +13,15 @@ import {
   Loader2,
 } from "lucide-react";
 
-import { addToCart } from "../../lib/store/cart/cartSlice";
-import { RootState } from "@/lib/store/store";
-import { useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/lib/store/store";
+import { useDispatch, useSelector } from "react-redux";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { toggleWishlist } from "@/lib/store/auth/authSlice";
+import { ProductFormState } from "@/lib/store/products/productsSlices";
+import { toast } from "sonner";
+import { updateProfileThunk } from "@/lib/store/auth/authThunks";
 
 /* ─── Price Range Slider ─────────────────────────────────── */
 const MIN_PRICE = 0;
@@ -174,7 +176,7 @@ const AccordionSection = ({
       </button>
 
       <div
-        className="overflow-hidden transition-all duration-300"
+        className="overflow-auto transition-all duration-300"
         style={{ maxHeight: open ? "400px" : "0px", opacity: open ? 1 : 0 }}
       >
         <div className="px-4 pb-4">{children}</div>
@@ -293,11 +295,11 @@ const Pagination = ({
           ) : (
             <button
               key={page}
-              onClick={() => onPageChange(page as number)}
-              className={`h-10 w-10 flex items-center justify-center rounded-xl border font-bold text-sm transition-all ${
-                currentPage === page
-                  ? "bg-secondary text-white border-secondary"
-                  : "border-border bg-surface hover:bg-secondary hover:text-white hover:border-secondary"
+              onClick={() => onPageChange(Number(page))}
+              className={`h-10 w-10 flex items-center justify-center rounded-full border-2 font-black text-sm transition-all ${
+                Number(currentPage) === Number(page)
+                  ? "bg-[#c9a227] text-black border-[#c9a227] shadow-[0_0_15px_rgba(201,162,39,0.4)] scale-110"
+                  : "border-white/10 bg-white/5 text-white/70 hover:border-white/30"
               }`}
             >
               {page}
@@ -328,19 +330,40 @@ const CategoryPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const handleFilterChange = (key: string, value: string) => {
+    const currentKey = `f_${key}`;
+    const allparams = Object.fromEntries(searchParams.entries());
+    const params = allparams[currentKey];
+    if (params) {
+      const values = params.split(",");
+      if (values.includes(value)) {
+        values.splice(values.indexOf(value), 1);
+      } else {
+        values.push(value);
+      }
+      allparams[currentKey] = values.join(",");
+      router.push(`?${new URLSearchParams(allparams).toString()}`);
+    } else {
+      allparams[currentKey] = value;
+      router.push(`?${new URLSearchParams(allparams).toString()}`);
+    }
+  };
+
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(
     Number(searchParams.get("page")) || 1,
   );
   const [itemsPerPage, setItemsPerPage] = useState(
-    Number(searchParams.get("perPage")) || 9,
+    Number(searchParams.get("perPage")) || 12,
   );
+
+  const dispatch = useDispatch<AppDispatch>();
 
   const { allCategories, categoryLoading } = useSelector(
     (state: RootState) => state.adminCategories,
   );
 
-  const { allProducts, loading } = useSelector(
+  const { allProducts, loading, totalProducts, filters } = useSelector(
     (state: RootState) => state.adminProducts,
   );
 
@@ -371,17 +394,15 @@ const CategoryPage = () => {
 
   const mainloading = categoryLoading || loading;
 
-  console.log(mainloading, categoryLoading, loading);
-
   if (mainloading) {
     return <LoadingState />;
   }
 
   // Pagination calculations
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const totalPages = Math.ceil(totalProducts / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+  // const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
 
   // Update URL when pagination changes
   const handlePageChange = (page: number) => {
@@ -405,6 +426,39 @@ const CategoryPage = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1);
+  };
+
+  const wishlistIds = user?.wishlist || [];
+
+  const handleWishlist = async (
+    e: React.MouseEvent,
+    product: ProductFormState,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user?._id) return;
+    let copiedList = structuredClone(wishlistIds);
+
+    const existingProduct = copiedList.find((prod) => prod._id === product._id);
+    if (existingProduct) {
+      copiedList = copiedList.filter((prod) => prod._id !== product._id);
+    } else {
+      copiedList.push(product);
+    }
+
+    const res = await dispatch(
+      updateProfileThunk({
+        userData: { wishlist: copiedList },
+        userId: user!._id,
+      }),
+    );
+
+    if (res.payload.success) {
+      toast.success("Wishlist updated successfully");
+    } else {
+      toast.error("Failed to update wishlist");
+    }
   };
 
   return (
@@ -517,26 +571,41 @@ const CategoryPage = () => {
                   </div>
                 </AccordionSection>
 
-                {/* Material accordion */}
-                <AccordionSection title="Material">
-                  <div className="space-y-2.5">
-                    {["Solid Oak", "Velvet", "Linen", "Ceramic"].map((mat) => (
-                      <label
-                        key={mat}
-                        className="flex items-center gap-2.5 text-sm font-bold text-foreground/80 cursor-pointer group"
-                      >
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4 accent-secondary"
-                        />
-                        {mat}
-                        <small className="ml-auto text-[10px] font-black text-muted opacity-50">
-                          12
-                        </small>
-                      </label>
-                    ))}
-                  </div>
-                </AccordionSection>
+                {filters.map((filter) => {
+                  const key = `f_${filter.key}`;
+                  const values = searchParams.get(key);
+
+                  const arrayofValues = values
+                    ? values.split(",").map((d) => d.toLowerCase())
+                    : [];
+                  return (
+                    <AccordionSection title={filter.label}>
+                      <div className="space-y-2.5">
+                        {filter.selectedValues.map((mat: any) => (
+                          <label
+                            key={mat}
+                            className="flex items-center gap-2.5 text-sm font-bold text-foreground/80 cursor-pointer group"
+                          >
+                            <input
+                              type="checkbox"
+                              className="w-4 h-4 accent-secondary"
+                              checked={arrayofValues.includes(
+                                mat.toLowerCase(),
+                              )}
+                              onChange={() =>
+                                handleFilterChange(filter.key, mat)
+                              }
+                            />
+                            {mat}
+                            <small className="ml-auto text-[10px] font-black text-muted opacity-50">
+                              12
+                            </small>
+                          </label>
+                        ))}
+                      </div>
+                    </AccordionSection>
+                  );
+                })}
 
                 {/* Rating accordion */}
                 <AccordionSection title="Rating" isLast>
@@ -607,57 +676,69 @@ const CategoryPage = () => {
               ) : (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {paginatedProducts.map((product) => (
-                      <div key={product._id} className="product-card group">
-                        {/* <div className="badge">{product.badge}</div> */}
-                        <Link
-                          href={`/product/${product.slug}`}
-                          className="img-wrap block"
-                        >
-                          <img
-                            src={product.gallery[0].url}
-                            alt={product.gallery[0].alt}
-                          />
-                        </Link>
-                        <div className="card-body">
-                          <div className="flex justify-between items-start mb-2.5">
-                            <Link
-                              href={`/product/${product.slug}`}
-                              className="font-heading text-[20px] font-black leading-[1.05] text-foreground/92 hover:text-secondary transition-colors"
-                            >
-                              {product.name}
-                            </Link>
-                            <div className="flex items-center gap-2">
-                              <button
-                                className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-foreground opacity-0 shadow-lg transition-all duration-300 group-hover:opacity-100 hover:scale-110 hover:text-secondary shrink-0"
-                                title="Wishlist"
-                              >
-                                <Heart size={18} />
-                              </button>
+                    {filteredProducts.map((product) => {
+                      const isWishlisted =
+                        wishlistIds.find(
+                          (wishlist) => wishlist._id === product._id,
+                        ) || null;
 
+                      return (
+                        <div key={product._id} className="product-card group">
+                          {/* <div className="badge">{product.badge}</div> */}
+                          <Link
+                            href={`/product/${product.slug}`}
+                            className="img-wrap block relative group"
+                          >
+                            <img
+                              src={product.gallery[0].url}
+                              alt={product.gallery[0].alt}
+                            />
+                            <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-100 transition-opacity duration-300">
                               <button
-                                className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-foreground opacity-0 shadow-lg transition-all duration-300 group-hover:opacity-100 hover:scale-110 hover:text-secondary shrink-0"
+                                className={`flex h-10 w-10 items-center justify-center rounded-full border border-black/10  text-black shadow-lg hover:scale-110 hover:bg-[#b8291e] hover:text-white transition-all ${isWishlisted != null ? "bg-[#b8291e] text-white" : "bg-[#c9a227]"}`}
+                                title="Wishlist"
+                                onClick={(e) => handleWishlist(e, product)}
+                              >
+                                <Heart
+                                  size={18}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth={2.5}
+                                />
+                              </button>
+                              <button
+                                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#111210] text-[#f2ede0] shadow-lg hover:scale-110 hover:bg-[#c9a227] hover:text-black transition-all"
                                 title="Quick View"
                               >
-                                <Eye size={18} />
+                                <Eye size={18} strokeWidth={2.5} />
                               </button>
                             </div>
-                          </div>
-                          <div className="flex justify-between items-center gap-2.5 flex-wrap font-black tracking-[1px] text-foreground/75">
-                            <span className="text-black text-[13px] uppercase tracking-[2px]">
-                              {product.price}
-                            </span>
-                            {/* <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[2px] text-primary whitespace-nowrap">
+                          </Link>
+                          <div className="card-body">
+                            <div className="flex justify-between items-start mb-2.5">
+                              <Link
+                                href={`/product/${product.slug}`}
+                                className="font-heading text-[20px] font-black leading-[1.05] text-foreground/92 hover:text-secondary transition-colors"
+                              >
+                                {product.name}
+                              </Link>
+                            </div>
+                            <div className="flex justify-between items-center gap-2.5 flex-wrap font-black tracking-[1px] text-foreground/75">
+                              <span className="text-black text-[13px] uppercase tracking-[2px]">
+                                {product.price}
+                              </span>
+                              {/* <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[2px] text-primary whitespace-nowrap">
                               <Star
                                 size={12}
                                 className="text-secondary fill-secondary"
                               />{" "}
                               {product.rating.toFixed(1)}
                             </span> */}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* Pagination */}

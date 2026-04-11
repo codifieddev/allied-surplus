@@ -10,8 +10,6 @@ export async function GET(req: NextRequest) {
   const query: any = {};
   if (type) query.type = type;
 
-  console.log("====>>", query);
-
   try {
     const Category = await getCategoryModel();
     const categories = await Category.find(query).toArray();

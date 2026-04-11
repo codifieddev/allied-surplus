@@ -54,8 +54,6 @@ export async function POST(req: NextRequest) {
       email: user.email,
       role: user.role || "customer",
       name: user.name,
-      wishlist: user.wishlist ? user.wishlist : [],
-      address: user.address ? user.address : [],
       username: user.username,
     };
 

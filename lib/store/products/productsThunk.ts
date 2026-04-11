@@ -6,7 +6,8 @@ export const fetchProducts = createAsyncThunk(
     try {
       const response = await fetch("/api/ecommerce/products");
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to fetch products");
+      if (!response.ok)
+        throw new Error(data.message || "Failed to fetch products");
       return data; // Slice expects { data, message }
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -16,13 +17,25 @@ export const fetchProducts = createAsyncThunk(
 
 export const fetchProductsByCategory = createAsyncThunk(
   "products/fetchByCategory",
-  async (category: string, { rejectWithValue }) => {
+  async (
+    {
+      category,
+      filters,
+    }: {
+      category: string;
+      filters: any;
+    },
+    { rejectWithValue },
+  ) => {
     try {
+      const parmas = new URLSearchParams(filters);
+
       const response = await fetch(
-        `/api/ecommerce/products?category=${category}&status=active`,
+        `/api/ecommerce/products?category=${category}&${parmas.toString()}`,
       );
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to fetch products");
+      if (!response.ok)
+        throw new Error(data.message || "Failed to fetch products");
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -36,7 +49,8 @@ export const fetchProductById = createAsyncThunk(
     try {
       const response = await fetch(`/api/ecommerce/products/${id}`);
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to fetch product");
+      if (!response.ok)
+        throw new Error(data.message || "Failed to fetch product");
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -82,7 +96,8 @@ export const deleteProduct = createAsyncThunk(
         method: "DELETE",
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to delete product");
+      if (!response.ok)
+        throw new Error(data.message || "Failed to delete product");
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -100,7 +115,8 @@ export const bulkImportProducts = createAsyncThunk(
         body: JSON.stringify(products),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to import products");
+      if (!response.ok)
+        throw new Error(data.message || "Failed to import products");
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message);

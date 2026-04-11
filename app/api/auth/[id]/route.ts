@@ -38,6 +38,9 @@ export async function PATCH(
     if (body.username) {
       finalSet.username = body.username;
     }
+    if (body.wishlist) {
+      finalSet.wishlist = body.wishlist;
+    }
 
     if (
       body.currentPassword &&
@@ -90,52 +93,11 @@ export async function PATCH(
 
     user = { ...user, ...finalSet };
 
-    delete user.password;
-
-    const forCustomer = {
-      id: user._id.toString(),
-      email: user.email,
-      role: user.role || "customer",
-      name: user.name,
-      wishlist: user.wishlist ? user.wishlist : [],
-      address: user.address ? user.address : [],
-      username: user.username,
-    };
-
-    const forAdmin = {
-      id: user._id.toString(),
-      email: user.email,
-      role: user.role || "admin",
-      isTenantOwner: user.isTenantOwner || false,
-      name: user.name,
-      username: user.username ? user.username : "",
-    };
-
-    const token = jwt.sign(
-      user.role === "admin" ? forAdmin : forCustomer,
-      JWT_SECRET,
-      { expiresIn: "1d" },
-    );
-
-    // Set HTTP-only cookie
-    const cookieString = serialize("auth_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24, // 1 day
-      path: "/",
-    });
-
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       message: "Authentication successful. Entry permitted.",
       user: user,
     });
-
-    response.headers.delete("Set-Cookie");
-
-    response.headers.set("Set-Cookie", cookieString);
-    return response;
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to update user" },

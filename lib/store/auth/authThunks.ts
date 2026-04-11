@@ -107,3 +107,53 @@ export const getAuthUserThunk = createAsyncThunk(
     }
   },
 );
+
+export const updateProfileThunk = createAsyncThunk(
+  "auth/updateProfile",
+  async (
+    {
+      userData,
+      userId,
+      editingAddressId,
+      deleteaddressId,
+    }: {
+      userData: any;
+      userId?: string;
+      editingAddressId?: string;
+      deleteaddressId?: string;
+    },
+    { rejectWithValue, getState },
+  ) => {
+    try {
+      const { auth } = getState() as any;
+      const params = new URLSearchParams();
+      if (editingAddressId) {
+        params.append("editaddress", editingAddressId);
+      }
+      if (deleteaddressId) {
+        params.append("deleteaddress", deleteaddressId);
+      }
+      
+      const response = await fetch(
+        `/api/auth/${userId || auth.user._id}?${params.toString()}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(userData),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Profile update failed");
+      }
+
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || "An unexpected error occurred");
+    }
+  },
+);

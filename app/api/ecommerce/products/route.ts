@@ -9,32 +9,97 @@ export async function GET(req: Request) {
   const category = url.searchParams.get("category");
   const status = url.searchParams.get("status");
   const type = url.searchParams.get("type");
+  const page = parseInt(url.searchParams.get("page") || "1");
+  const perPage = parseInt(url.searchParams.get("perPage") || "12");
+  const skip = (page - 1) * perPage;
+
+  const variantFilters: any[] = [];
+
+  url.searchParams.forEach((value, key) => {
+    if (!key.startsWith("f_")) return;
+
+    const actualKey = key.replace("f_", "");
+
+    variantFilters.push({
+      options: {
+        $elemMatch: {
+          key: actualKey,
+          selectedValues: {
+            $in: value.split(","),
+          },
+        },
+      },
+    });
+  });
 
   const query: any = {};
   if (search) query.name = { $regex: search, $options: "i" };
   if (category && category !== "all") query.categoryIds = category;
   if (status) query.status = status;
   if (type) query.type = type;
+  if (variantFilters.length > 0) query.$and = variantFilters;
 
   try {
     const Product = await getProductModel();
     const Variant = await getVariantModel();
-    const products = await Product.find(query).toArray();
+    const totalProducts = await Product.countDocuments(query);
+    const products = await Product.find(query)
+      .skip(skip)
+      .limit(perPage)
+      .toArray();
 
     // Enrich with variants
-    const enriched = await Promise.all(products.map(async (p: any) => {
-      const variants = await Variant.find({ productId: p._id }).toArray();
-      return {
-        ...p,
-        variantCount: variants.length,
-        totalStock: variants.reduce((acc: number, v: any) => acc + (v.stock || 0), 0),
-        variants
-      };
-    }));
+    const enriched = await Promise.all(
+      products.map(async (p: any) => {
+        const variants = await Variant.find({ productId: p._id }).toArray();
+        return {
+          ...p,
+          variantCount: variants.length,
+          totalStock: variants.reduce(
+            (acc: number, v: any) => acc + (v.stock || 0),
+            0,
+          ),
+          variants,
+        };
+      }),
+    );
+
+    const filters = await Product.find(query)
+      .project({
+        options: 1,
+      })
+      .toArray();
+
+    const mapped = filters
+      .map((d) => {
+        return d.options.filter((op: any) => op.useForVariants == true);
+      })
+      .flat();
+
+    let final = [];
+
+    for (let i of mapped) {
+      const isIncluded = final.findIndex((d) => d.key == i.key);
+      if (isIncluded > -1) {
+        const set = new Set([
+          ...final[isIncluded].selectedValues,
+          ...i.selectedValues,
+        ]);
+        final[isIncluded].selectedValues = [...set];
+      } else {
+        final.push({
+          key: i.key,
+          label: i.label,
+          selectedValues: i.selectedValues,
+        });
+      }
+    }
 
     return NextResponse.json({
       message: "Products fetched successfully",
-      data: enriched
+      data: enriched,
+      totalProducts,
+      filters: final,
     });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
@@ -43,7 +108,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const auth = await authenticateAdmin();
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!auth)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const body = await req.json();
@@ -51,7 +117,10 @@ export async function POST(req: Request) {
     const Variant = await getVariantModel();
 
     if (!body.name || !body.sku) {
-      return NextResponse.json({ message: "Name and SKU are required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Name and SKU are required" },
+        { status: 400 },
+      );
     }
 
     const variants = body.variants || [];
@@ -59,9 +128,9 @@ export async function POST(req: Request) {
 
     const productDoc = {
       ...body,
-      slug: body.slug || body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      slug: body.slug || body.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     const result = await Product.insertOne(productDoc);
@@ -72,7 +141,7 @@ export async function POST(req: Request) {
       productId: productId,
       _id: new ObjectId(),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     }));
 
     if (variantWithId.length > 0) {
@@ -81,7 +150,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       message: "Product created successfully",
-      data: { ...productDoc, _id: productId, variants: variantWithId }
+      data: { ...productDoc, _id: productId, variants: variantWithId },
     });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
@@ -90,12 +159,14 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   const auth = await authenticateAdmin();
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!auth)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
 
-  if (!id) return NextResponse.json({ message: "ID is required" }, { status: 400 });
+  if (!id)
+    return NextResponse.json({ message: "ID is required" }, { status: 400 });
 
   try {
     const body = await req.json();
@@ -108,38 +179,43 @@ export async function PUT(req: Request) {
 
     await Product.updateOne(
       { _id: new ObjectId(id) },
-      { $set: { ...body, updatedAt: new Date() } }
+      { $set: { ...body, updatedAt: new Date() } },
     );
 
     // Update variants logic from reference
     if (variants && Array.isArray(variants)) {
-       // For simplicity in this port, we sync variants by ID or recreate
-       // Reference logic checks if variant exists then updates, else inserts.
-       const existingVariants = await Variant.find({ productId: new ObjectId(id) }).toArray();
-       const existingIds = existingVariants.map(v => v._id.toString());
+      // For simplicity in this port, we sync variants by ID or recreate
+      // Reference logic checks if variant exists then updates, else inserts.
+      const existingVariants = await Variant.find({
+        productId: new ObjectId(id),
+      }).toArray();
+      const existingIds = existingVariants.map((v) => v._id.toString());
 
-       for (const v of variants) {
-          if (v._id && existingIds.includes(v._id.toString())) {
-             const vId = new ObjectId(v._id);
-             const vData = { ...v };
-             delete vData._id;
-             await Variant.updateOne({ _id: vId }, { $set: { ...vData, updatedAt: new Date() } });
-          } else {
-             const vData = { ...v };
-             delete vData._id;
-             await Variant.insertOne({
-                ...vData,
-                productId: new ObjectId(id),
-                createdAt: new Date(),
-                updatedAt: new Date()
-             });
-          }
-       }
+      for (const v of variants) {
+        if (v._id && existingIds.includes(v._id.toString())) {
+          const vId = new ObjectId(v._id);
+          const vData = { ...v };
+          delete vData._id;
+          await Variant.updateOne(
+            { _id: vId },
+            { $set: { ...vData, updatedAt: new Date() } },
+          );
+        } else {
+          const vData = { ...v };
+          delete vData._id;
+          await Variant.insertOne({
+            ...vData,
+            productId: new ObjectId(id),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+      }
     }
 
     return NextResponse.json({
       message: "Product updated successfully",
-      data: { ...body, _id: id, variants }
+      data: { ...body, _id: id, variants },
     });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
@@ -148,12 +224,14 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   const auth = await authenticateAdmin();
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!auth)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
 
-  if (!id) return NextResponse.json({ message: "ID is required" }, { status: 400 });
+  if (!id)
+    return NextResponse.json({ message: "ID is required" }, { status: 400 });
 
   try {
     const Product = await getProductModel();
@@ -162,17 +240,17 @@ export async function DELETE(req: Request) {
     // Soft delete as per reference logic
     await Product.updateOne(
       { _id: new ObjectId(id) },
-      { $set: { status: "archived", updatedAt: new Date() } }
+      { $set: { status: "archived", updatedAt: new Date() } },
     );
 
     await Variant.updateMany(
       { productId: new ObjectId(id) },
-      { $set: { status: "inactive", updatedAt: new Date() } }
+      { $set: { status: "inactive", updatedAt: new Date() } },
     );
 
     return NextResponse.json({
       message: "Product archived successfully",
-      id: id
+      id: id,
     });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });

@@ -50,6 +50,8 @@ interface ProductsState {
   saving: boolean;
   error: string | null;
   hasFetched: boolean;
+  totalProducts: number;
+  filters: any[];
 }
 
 const initialFormState: ProductFormState = {
@@ -85,6 +87,8 @@ const initialState: ProductsState = {
   saving: false,
   error: null,
   hasFetched: false,
+  totalProducts: 0,
+  filters: [],
 };
 
 const productsSlice = createSlice({
@@ -234,13 +238,10 @@ const productsSlice = createSlice({
       })
       .addCase(fetchProductsByCategory.fulfilled, (state, action) => {
         const newProducts = action.payload.data || [];
-
-        newProducts.forEach((element: any) => {
-          if (!state.allProducts.find((p) => p._id === element._id)) {
-            state.allProducts.push(element);
-          }
-        });
+        state.allProducts = newProducts;
+        state.filters = action.payload.filters;
         state.loading = false;
+        state.totalProducts = action.payload.totalProducts;
       })
       .addCase(fetchProductsByCategory.rejected, (state, action) => {
         state.loading = false;
