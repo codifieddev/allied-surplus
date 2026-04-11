@@ -4,7 +4,10 @@ import {
   loginThunk,
   logoutThunk,
   signupThunk,
+  updateProfileThunk,
 } from "./authThunks";
+import { Product } from "@/data/products";
+import { ProductFormState } from "../products/productsSlices";
 
 export type Address = {
   _id?: string;
@@ -30,7 +33,7 @@ interface User {
   _id?: string;
   address?: Address[];
   name?: string;
-  wishlist?: string[];
+  wishlist?: ProductFormState[];
   isTenantOwner?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -79,6 +82,10 @@ const authSlice = createSlice({
     },
     updateProfile: (state, action: PayloadAction<User>) => {
       state.user = { ...state.user, ...action.payload };
+    },
+    toggleWishlist: (state, action: PayloadAction<ProductFormState[]>) => {
+      if (!state.user) return;
+      state.user.wishlist = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -136,6 +143,19 @@ const authSlice = createSlice({
       .addCase(logoutThunk.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+      })
+      .addCase(updateProfileThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateProfileThunk.fulfilled, (state, action: any) => {
+        state.user = action.payload.user;
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(updateProfileThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
       });
   },
 });
@@ -147,5 +167,6 @@ export const {
   setLoading,
   setError,
   updateAddress,
+  toggleWishlist,
 } = authSlice.actions;
 export default authSlice.reducer;

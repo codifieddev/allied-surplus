@@ -23,6 +23,7 @@ import {
   updateAddress,
   updateProfile,
 } from "@/lib/store/auth/authSlice";
+import { updateProfileThunk } from "@/lib/store/auth/authThunks";
 
 export default function AccountPage() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -115,30 +116,18 @@ export default function AccountPage() {
       try {
         const updatedAddress = { ...addressForm, _id: editingAddressId };
 
-        const req = await fetch(
-          `/api/auth/${user!.id}?editaddress=${editingAddressId}`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ address: updatedAddress }),
-          },
-        );
+        const updatedData = await dispatch(
+          updateProfileThunk({
+            userData: { address: updatedAddress },
+            userId: user!._id,
+            editingAddressId,
+          }),
+        ).unwrap();
 
-        const res = await req.json();
-
-        if (res.success) {
-          dispatch(
-            updateAddress(
-              (user?.address || []).map((addr) =>
-                addr._id === editingAddressId ? updatedAddress : addr,
-              ),
-            ),
-          );
+        if (updatedData.success) {
           toast.success("Address updated successfully");
         } else {
-          toast.error(res.error || "Failed to update address");
+          toast.error(updatedData.error || "Failed to update address");
         }
 
         resetAddressForm();
@@ -153,25 +142,18 @@ export default function AccountPage() {
 
   const handleDeleteAddress = async (id: string) => {
     try {
-      const req = await fetch(`/api/auth/${user!.id}?deleteaddress=${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ address: {} }), // Body is filtered out by API using query param
-      });
+      const updatedData = await dispatch(
+        updateProfileThunk({
+          userData: { address: {} },
+          userId: user!._id,
+          deleteaddressId: id,
+        }),
+      ).unwrap();
 
-      const res = await req.json();
-
-      if (res.success) {
-        dispatch(
-          updateAddress(
-            (user?.address || []).filter((addr) => addr._id !== id),
-          ),
-        );
+      if (updatedData.success) {
         toast.success("Address deleted successfully");
       } else {
-        toast.error(res.error || "Failed to delete address");
+        toast.error(updatedData.error || "Failed to delete address");
       }
     } catch (error) {
       console.error("Error deleting address:", error);
@@ -210,21 +192,14 @@ export default function AccountPage() {
   // Profile handlers
   const handleUpdateProfile = async () => {
     try {
-      const req = await fetch(`/api/auth/${user!.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(profileForm),
-      });
+      const updatedData = await dispatch(
+        updateProfileThunk({ userData: profileForm, userId: user!._id }),
+      ).unwrap();
 
-      const res = await req.json();
-
-      if (res.success) {
-        dispatch(updateProfile(profileForm));
+      if (updatedData.success) {
         toast.success("Profile updated successfully");
       } else {
-        toast.error(res.error || "Failed to update profile");
+        toast.error(updatedData.error || "Failed to update profile");
       }
     } catch (error) {
       toast.error("Failed to update profile");

@@ -10,6 +10,8 @@ import { getTenantRegistry } from "@/lib/getPageData";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import GetUser from "@/lib/GetAllDetails/GetUser";
+import { ObjectId } from "mongodb";
+import { connectTenantDB } from "@/lib/db";
 
 const barlow = Barlow({
   subsets: ["latin"],
@@ -43,6 +45,7 @@ export default async function RootLayout({
   const tenantRegistry = await getTenantRegistry();
   const cookieStore = await cookies();
   const token = cookieStore.get("auth_token")?.value;
+  const db = await connectTenantDB();
 
   let isAuthenticated = false;
 
@@ -53,7 +56,11 @@ export default async function RootLayout({
       let check = jwt.verify(token, JWT_SECRET);
       if (check) {
         isAuthenticated = true;
-        user = jwt.decode(token);
+        let decodedUser: any = jwt.decode(token);
+        let nonserialise = await db
+          .collection("users")
+          .findOne({ _id: new ObjectId(decodedUser!.id) });
+        user = JSON.parse(JSON.stringify(nonserialise));
       }
     } catch (e) {
       isAuthenticated = false;

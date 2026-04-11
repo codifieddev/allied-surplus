@@ -10,6 +10,7 @@ import {
   Plus,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Truck,
   RotateCcw,
   Info,
@@ -21,6 +22,9 @@ import { addToCartAsync } from "../../lib/store/cart/cartThunk";
 import { RootState } from "@/lib/store/store";
 import { useSelector } from "react-redux";
 import { composeVariantKey } from "@/lib/admin-products/utils";
+import { ProductFormState } from "@/lib/store/products/productsSlices";
+import { updateProfileThunk } from "@/lib/store/auth/authThunks";
+import { toast } from "sonner";
 
 const ProductDetailPage = ({
   currentProduct,
@@ -36,6 +40,8 @@ const ProductDetailPage = ({
   const { items, loading, error, hasCartFetched } = useSelector(
     (state: RootState) => state.cart,
   );
+
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const { id } = useParams<{ id: string }>();
   const [quantity, setQuantity] = useState(1);
@@ -101,8 +107,35 @@ const ProductDetailPage = ({
 
   // Get variant options (options marked for variants)
   const variantOptions = useMemo(() => {
-    if (!currentProduct?.options) return [];
-    return currentProduct.options.filter((opt: any) => opt.useForVariants);
+    if (!currentProduct?.options || !currentProduct?.variants) return [];
+
+    return currentProduct.options
+      .filter((opt: any) => opt.useForVariants)
+      .map((opt: any) => {
+        // Find all unique values for this option key across all variants
+        const variantValues = new Set(
+          currentProduct.variants
+            .map((v: any) => v.optionValues?.[opt.key])
+            .filter(Boolean),
+        );
+
+        // Filter original values to only include those present in variants,
+        // this preserves the intended sort order (e.g. Small, Medium, Large)
+        const availableValues = (opt.values || []).filter((val: string) =>
+          variantValues.has(val),
+        );
+
+        // Fallback: if opt.values is missing, use variantValues directly
+        const finalValues =
+          availableValues.length > 0
+            ? availableValues
+            : Array.from(variantValues);
+
+        return {
+          ...opt,
+          availableValues: finalValues,
+        };
+      });
   }, [currentProduct]);
 
   // Group options by attributeSetId for specifications
@@ -156,8 +189,18 @@ const ProductDetailPage = ({
       );
     });
 
+    setSelectedVariant(matchingVariant || null);
+
     if (matchingVariant) {
-      setSelectedVariant(matchingVariant);
+      // Clamp quantity to new variant's stock
+      const stock = parseInt(matchingVariant.stock || 0);
+      if (quantity > stock && stock > 0) {
+        setQuantity(stock);
+      } else if (stock === 0) {
+        setQuantity(1);
+      }
+    } else {
+      setQuantity(1);
     }
   };
 
@@ -173,8 +216,6 @@ const ProductDetailPage = ({
       });
     }
   };
-
-  console.log(formData);
 
   // Validate form
   const validateForm = () => {
@@ -229,12 +270,27 @@ const ProductDetailPage = ({
         return { text: `Only ${stock} left`, color: "text-orange-500" };
       return { text: "In Stock", color: "text-green-500" };
     }
-    return { text: "In Stock", color: "text-green-500" };
+    return { text: "Out of Stock", color: "text-red-500" };
   }, [selectedVariant]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
+
+  // Ensure categories are being fetched for breadcrumbs
+  const dispatch_cat = useAppDispatch();
+  const { hasCategoriesFetched } = useSelector(
+    (state: RootState) => state.adminCategories,
+  );
+
+  useEffect(() => {
+    if (!hasCategoriesFetched) {
+      const {
+        fetchCategories,
+      } = require("@/lib/store/categories/categoriesThunk");
+      dispatch_cat(fetchCategories({}));
+    }
+  }, [hasCategoriesFetched, dispatch_cat]);
 
   if (!currentProduct) {
     return (
@@ -280,20 +336,57 @@ const ProductDetailPage = ({
     setTimeout(() => setIsAdded(false), 2000);
   };
 
+  const wishlistIds = user?.wishlist || [];
+  const isWishlisted = wishlistIds.some(
+    (prod) => prod._id === currentProduct._id,
+  );
+
+  const handleWishlist = async (
+    e: React.MouseEvent,
+    product: ProductFormState,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user?._id) return;
+    let copiedList = structuredClone(wishlistIds);
+
+    const existingProduct = copiedList.find((prod) => prod._id === product._id);
+    if (existingProduct) {
+      copiedList = copiedList.filter((prod) => prod._id !== product._id);
+    } else {
+      copiedList.push(product);
+    }
+
+    const res = await dispatch(
+      updateProfileThunk({
+        userData: { wishlist: copiedList },
+        userId: user!._id,
+      }),
+    );
+
+    if (res.payload.success) {
+      toast.success("Wishlist updated successfully");
+    } else {
+      toast.error("Failed to update wishlist");
+    }
+  };
+
   return (
     <div className="mx-auto px-[5%] pb-20">
       {/* Breadcrumbs */}
-      <div className="crumbs">
-        <Link href="/">Home</Link> <span>›</span>
-        <Link href="/shop">Shop</Link> <span>›</span>
+      <div className="crumbs flex items-center gap-2">
+        <Link href="/">Home</Link>
+        <ChevronRight size={12} className="opacity-50" />
+        <Link href="/shop">Products</Link>
+        <ChevronRight size={12} className="opacity-50" />
         {categoryPath.map((cat: any, idx: number) => (
           <React.Fragment key={cat._id}>
             <Link href={`/category/${cat.slug}`}>{cat.title}</Link>
-            {idx < categoryPath.length - 1 && <span>›</span>}
+            <ChevronRight size={12} className="opacity-50" />
           </React.Fragment>
         ))}
-        {categoryPath.length > 0 && <span>›</span>}
-        <strong>{currentProduct.name}</strong>
+        <strong className="text-foreground">{currentProduct.name}</strong>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_480px] gap-12 items-start">
@@ -342,7 +435,14 @@ const ProductDetailPage = ({
                   {currentProduct.name}
                 </h1>
               </div>
-              <button className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:bg-muted/10 transition-all shrink-0">
+              <button
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shrink-0 ${
+                  isWishlisted
+                    ? "bg-red-500 text-white"
+                    : "border border-border"
+                }`}
+                onClick={(e) => handleWishlist(e, currentProduct)}
+              >
                 <Heart size={20} />
               </button>
             </div>
@@ -385,14 +485,14 @@ const ProductDetailPage = ({
                     Select {option.label}
                   </label>
                   <div className="flex flex-wrap gap-2.5">
-                    {option.selectedValues.map((value: string) => (
+                    {option.availableValues.map((value: string) => (
                       <button
                         key={value}
                         onClick={() => handleOptionChange(option.key, value)}
-                        className={`h-11 px-6 rounded-xl border font-black text-[13px] transition-all ${
+                        className={`h-11 px-6 rounded-xl border-2 font-black text-[13px] transition-all ${
                           selectedOptions[option.key] === value
-                            ? "border-secondary bg-secondary/10 text-secondary"
-                            : "border-border hover:border-secondary/40"
+                            ? "border-[#c9a227] bg-[#c9a227] text-black shadow-[0_0_20px_rgba(201,162,39,0.4)] scale-105"
+                            : "border-white/10 bg-white/5 text-white/70 hover:border-white/30"
                         }`}
                       >
                         {value}
@@ -450,7 +550,9 @@ const ProductDetailPage = ({
 
           {/* Actions */}
           <div className="flex gap-4">
-            <div className="flex items-center h-14 rounded-full border border-border bg-surface px-2">
+            <div
+              className={`flex items-center h-14 rounded-full border border-border bg-surface px-2 transition-opacity ${!selectedVariant ? "opacity-30 pointer-events-none" : ""}`}
+            >
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted/10 transition-all"
@@ -461,24 +563,33 @@ const ProductDetailPage = ({
                 {quantity}
               </span>
               <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted/10 transition-all"
+                onClick={() => {
+                  const maxStock = parseInt(selectedVariant?.stock || 0);
+                  if (quantity < maxStock) {
+                    setQuantity(quantity + 1);
+                  }
+                }}
+                disabled={
+                  !selectedVariant ||
+                  quantity >= parseInt(selectedVariant?.stock || 0)
+                }
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted/10 transition-all disabled:opacity-20 disabled:cursor-not-allowed"
               >
                 <Plus size={16} />
               </button>
             </div>
             <button
               onClick={handleAddToCart}
-              disabled={stockStatus.text === "Out of Stock"}
+              disabled={!selectedVariant || stockStatus.text === "Out of Stock"}
               className={`flex-1 h-14 rounded-full text-xs font-black uppercase tracking-[2px] shadow-lg transition-all flex items-center justify-center gap-2 ${
-                stockStatus.text === "Out of Stock"
+                !selectedVariant || stockStatus.text === "Out of Stock"
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
                   : isAdded
                     ? "bg-emerald-600 text-white shadow-emerald-600/20"
                     : "bg-primary text-white shadow-primary/20 hover:bg-primary/90 hover:-translate-y-0.5"
               }`}
             >
-              {stockStatus.text === "Out of Stock" ? (
+              {!selectedVariant || stockStatus.text === "Out of Stock" ? (
                 "Out of Stock"
               ) : isAdded ? (
                 <>

@@ -24,7 +24,7 @@ export const getSessionId = async () => {
 
 export const getUserId = async () => {
   const cookieStore = await cookies();
-  let userId = cookieStore.get("kalp_session")?.value;
+  let userId = cookieStore.get("auth_token")?.value;
   if (!userId || !JWT_SECRET) return null;
   let verify = jwt.verify(userId, JWT_SECRET);
   return verify;
@@ -32,16 +32,16 @@ export const getUserId = async () => {
 
 export async function GET() {
   try {
+    const cookieStore = await cookies();
     const user: any = await getUserId();
     const sessionId = await getSessionId();
     const Cart = await getCartModel();
     let cart = await Cart.findOne({ sessionId });
 
-    if (user?.userId) {
+    if (user?.id) {
       const userCart = await Cart.findOne({
-        userId: new ObjectId(user.userId),
+        userId: new ObjectId(user.id),
       });
-
       if (
         userCart &&
         userCart?.items.length > 0 &&
@@ -59,14 +59,23 @@ export async function GET() {
           }
         }
         await Cart.updateOne(
-          { userId: new ObjectId(user.userId) },
+          { userId: new ObjectId(user.id) },
           { $set: { items: userCart?.items, updatedAt: new Date() } },
         );
-        await Cart.deleteOne({ sessionId });
+        cart = userCart;
+      } else if (userCart && userCart?.items.length > 0) {
         cart = userCart;
       } else {
-        cart = userCart;
+        await Cart.insertOne({
+          userId: new ObjectId(user.id),
+          items: cart?.items || [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
       }
+      cart = userCart;
+      await Cart.deleteOne({ sessionId });
+      cookieStore.delete("cart_session_id");
     }
 
     return NextResponse.json({
@@ -89,9 +98,9 @@ export async function POST(request: NextRequest) {
     const item = await request.json();
     const Cart = await getCartModel();
 
-    if (user?.userId) {
+    if (user?.id) {
       const userCart = await Cart.findOne({
-        userId: new ObjectId(user.userId),
+        userId: new ObjectId(user.id),
       });
       const existingItemIndex = userCart?.items.findIndex(
         (i: any) => i.cartItemId === item.cartItemId,
@@ -99,7 +108,7 @@ export async function POST(request: NextRequest) {
       if (userCart && existingItemIndex > -1) {
         userCart.items[existingItemIndex].quantity += item.quantity;
         await Cart.updateOne(
-          { userId: user.userId },
+          { userId: user.id },
           { $set: { items: userCart?.items, updatedAt: new Date() } },
         );
         return NextResponse.json({
@@ -109,7 +118,7 @@ export async function POST(request: NextRequest) {
         });
       } else {
         const newCart = {
-          userId: new ObjectId(user.userId),
+          userId: new ObjectId(user.id),
           items: [item],
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -183,9 +192,9 @@ export async function PUT(request: NextRequest) {
 
     let updateItems: any[] = [];
 
-    if (user?.userId) {
+    if (user?.id) {
       const userCart = await Cart.findOne({
-        userId: new ObjectId(user.userId),
+        userId: new ObjectId(user.id),
       });
       const cartItemIndex = userCart?.items.findIndex(
         (i: any) => i.cartItemId === cartItemId,
@@ -196,7 +205,7 @@ export async function PUT(request: NextRequest) {
           userCart.items.splice(cartItemIndex, 1);
         }
         await Cart.updateOne(
-          { userId: new ObjectId(user.userId) },
+          { userId: new ObjectId(user.id) },
           { $set: { items: userCart?.items, updatedAt: new Date() } },
         );
         updateItems = userCart.items;
@@ -243,11 +252,11 @@ export async function DELETE(request: NextRequest) {
 
     let updatedItems: any[] = [];
 
-    if (user?.userId) {
-      const cart = await Cart.findOne({ userId: new ObjectId(user.userId) });
+    if (user?.id) {
+      const cart = await Cart.findOne({ userId: new ObjectId(user.id) });
       if (clear === "true") {
         await Cart.updateOne(
-          { userId: user.userId },
+          { userId: user.id },
           { $set: { items: [], updatedAt: new Date() } },
         );
         updatedItems = [];
@@ -261,7 +270,7 @@ export async function DELETE(request: NextRequest) {
           (item: any) => item.cartItemId !== cartItemId,
         );
         await Cart.updateOne(
-          { userId: new ObjectId(user.userId) },
+          { userId: new ObjectId(user.id) },
           { $set: { items: updatedItems, updatedAt: new Date() } },
         );
       }
