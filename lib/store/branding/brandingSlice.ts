@@ -119,22 +119,21 @@ const brandingSlice = createSlice({
       if (!state.config?.companyInfo.name) return;
       localStorage.setItem(
         state.config?.companyInfo.name,
-        JSON.stringify(action.payload),
+        String(action.payload),
       );
       state.currencyselector = action.payload;
     },
     loadCurrencyFromStorage: (state) => {
       if (!state.config?.companyInfo.name) return;
-      const stored = JSON.parse(
+      const stored = String(
         localStorage.getItem(state.config?.companyInfo.name)!,
       );
-
-      if (stored) {
+      if (stored != "null") {
         state.currencyselector = stored;
       } else {
         localStorage.setItem(
           state.config?.companyInfo.name,
-          state.config.currencies.default,
+          String(state.config.currencies.default),
         );
         state.currencyselector = state.config.currencies.default;
       }
