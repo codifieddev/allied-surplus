@@ -8,9 +8,7 @@ import { AppDispatch } from "../store/store";
 import { fetchProducts } from "../store/products/productsThunk";
 
 export default function GetAllProducts() {
-  const { allProducts, loading, error, hasFetched } = useSelector(
-    (state: RootState) => state.adminProducts,
-  );
+  const { hasFetched } = useSelector((state: RootState) => state.adminProducts);
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -19,10 +17,11 @@ export default function GetAllProducts() {
   useEffect(() => {
     if (!user) return;
 
-    if (!hasFetched && !loading) {
+    if (!hasFetched) {
+      console.log("Fetching products");
       dispatch(fetchProducts());
     }
-  }, [user, hasFetched, loading]);
+  }, [user, hasFetched]);
 
   return null;
 }

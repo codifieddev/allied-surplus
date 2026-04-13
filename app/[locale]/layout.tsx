@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import "../globals.css";
 import Providers from "@/components/Providers";
 import LayoutWrapper from "@/components/LayoutWrapper";
-import StoreProvider from "./StoreProvider";
+import StoreProvider from "@/app/StoreProvider";
 import { AnnotatorPlugin } from "@/components/annotationPlugin";
 import { Barlow, Barlow_Condensed } from "next/font/google";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ import jwt from "jsonwebtoken";
 import GetUser from "@/lib/GetAllDetails/GetUser";
 import { ObjectId } from "mongodb";
 import { connectTenantDB } from "@/lib/db";
+import BrandingInitializer from "@/components/branding/BrandingInitializer";
 
 const barlow = Barlow({
   subsets: ["latin"],
@@ -41,7 +42,12 @@ const JWT_SECRET =
 
 export default async function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const tenantRegistry = await getTenantRegistry();
   const cookieStore = await cookies();
   const token = cookieStore.get("auth_token")?.value;
@@ -69,12 +75,13 @@ export default async function RootLayout({
 
   return (
     <html
-      lang="en"
+      lang={locale || "en"}
       suppressHydrationWarning
       className={cn("font-sans", barlow.variable, barlowCondensed.variable)}
     >
       <body>
         <StoreProvider>
+          <BrandingInitializer initialConfig={tenantRegistry} />
           <Providers>
             <GetUser user={user} />
             <LayoutWrapper brandConfig={tenantRegistry}>

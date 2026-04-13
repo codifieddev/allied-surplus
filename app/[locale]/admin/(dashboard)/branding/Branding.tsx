@@ -1,9 +1,25 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Upload, Plus, X, ExternalLink, Eye, EyeOff } from "lucide-react";
+import {
+  Upload,
+  Plus,
+  X,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  Globe,
+  Layers,
+} from "lucide-react";
 import { MediaLibraryModal } from "@/components/admin/media/MediaLibraryModal";
+import { CountrySearchModal } from "@/components/admin/branding/CountrySearchModal";
 import { Button } from "@/components/ui/button";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import {
+  fetchBrandingThunk,
+  saveBrandingThunk,
+} from "@/lib/store/branding/brandingThunks";
+import { updateBrandingState } from "@/lib/store/branding/brandingSlice";
 
 // Type Definitions
 interface Logo {
@@ -48,6 +64,29 @@ interface LegalInfo {
   copyrightText: string;
 }
 
+interface Language {
+  code: string;
+  name: string;
+  enabled: boolean;
+}
+
+interface Currency {
+  code: string;
+  symbol: string;
+  name: string;
+  enabled: boolean;
+}
+
+interface LanguageConfig {
+  available: Language[];
+  default: string;
+}
+
+interface CurrencyConfig {
+  available: Currency[];
+  default: string;
+}
+
 // Theme colors removed
 
 interface BrandConfiguration {
@@ -57,6 +96,8 @@ interface BrandConfiguration {
   contact: ContactInfo;
   socialMedia: SocialMedia[];
   legal: LegalInfo;
+  languages: LanguageConfig;
+  currencies: CurrencyConfig;
 }
 
 type SectionId =
@@ -65,7 +106,8 @@ type SectionId =
   | "locations"
   | "contact"
   | "social"
-  | "legal";
+  | "legal"
+  | "regional";
 
 interface Section {
   id: SectionId;
@@ -73,52 +115,31 @@ interface Section {
 }
 
 export default function BrandingManager() {
-  const [loading, setLoading] = useState(true);
-  const [brandConfig, setBrandConfig] = useState<BrandConfiguration | null>(
-    null,
+  const dispatch = useAppDispatch();
+  const { config: brandConfig, isLoading: loading } = useAppSelector(
+    (state) => state.branding,
   );
 
-  console.log(brandConfig);
-
   useEffect(() => {
-    fetch("/api/admin/branding")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.branding) {
-          setBrandConfig(data.branding);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to load branding", err);
-        setLoading(false);
-      });
-  }, []);
+    if (!brandConfig) {
+      dispatch(fetchBrandingThunk());
+    }
+  }, [dispatch, brandConfig]);
 
   const saveConfiguration = async () => {
-    try {
-      const res = await fetch("/api/admin/branding", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(brandConfig),
-      });
-      if (res.ok) alert("Branding configuration saved successfully!");
-      else alert("Failed to save branding configuration.");
-    } catch (err) {
-      console.error(err);
-      alert("Error saving configuration.");
+    if (brandConfig) {
+      dispatch(saveBrandingThunk(brandConfig));
     }
   };
 
   const [activeSection, setActiveSection] = useState<SectionId>("logo");
 
   const addLogo = (): void => {
-    setBrandConfig((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
+    if (!brandConfig) return;
+    dispatch(
+      updateBrandingState({
         logos: [
-          ...prev.logos,
+          ...brandConfig.logos,
           {
             id: Date.now().toString(),
             url: "",
@@ -127,43 +148,40 @@ export default function BrandingManager() {
             height: 40,
           },
         ],
-      };
-    });
+      }),
+    );
   };
 
   const removeLogo = (id: string): void => {
-    setBrandConfig((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        logos: prev.logos.filter((l) => l.id !== id),
-      };
-    });
+    if (!brandConfig) return;
+    dispatch(
+      updateBrandingState({
+        logos: brandConfig.logos.filter((l) => l.id !== id),
+      }),
+    );
   };
 
   const updateLogo = (id: string, field: keyof Logo, value: any): void => {
-    setBrandConfig((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        logos: prev.logos.map((l) =>
+    if (!brandConfig) return;
+    dispatch(
+      updateBrandingState({
+        logos: brandConfig.logos.map((l) =>
           l.id === id ? { ...l, [field]: value } : l,
         ),
-      };
-    });
+      }),
+    );
   };
 
   const updateCompanyInfo = <K extends keyof CompanyInfo>(
     field: K,
     value: CompanyInfo[K],
   ): void => {
-    setBrandConfig((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        companyInfo: { ...prev.companyInfo, [field]: value },
-      };
-    });
+    if (!brandConfig) return;
+    dispatch(
+      updateBrandingState({
+        companyInfo: { ...brandConfig.companyInfo, [field]: value },
+      }),
+    );
   };
 
   const updateLocation = <K extends keyof Location>(
@@ -171,25 +189,23 @@ export default function BrandingManager() {
     field: K,
     value: Location[K],
   ): void => {
-    setBrandConfig((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        locations: prev.locations.map((loc) =>
+    if (!brandConfig) return;
+    dispatch(
+      updateBrandingState({
+        locations: brandConfig.locations.map((loc) =>
           loc.id === id ? { ...loc, [field]: value } : loc,
         ),
-      };
-    });
+      }),
+    );
   };
 
   const addLocation = (): void => {
-    const newId = Math.max(...brandConfig!.locations.map((l) => l.id), 0) + 1;
-    setBrandConfig((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
+    if (!brandConfig) return;
+    const newId = Math.max(...brandConfig.locations.map((l) => l.id), 0) + 1;
+    dispatch(
+      updateBrandingState({
         locations: [
-          ...prev.locations,
+          ...brandConfig.locations,
           {
             id: newId,
             name: "",
@@ -198,18 +214,17 @@ export default function BrandingManager() {
             isPrimary: false,
           },
         ],
-      };
-    });
+      }),
+    );
   };
 
   const removeLocation = (id: number): void => {
-    setBrandConfig((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        locations: prev.locations.filter((loc) => loc.id !== id),
-      };
-    });
+    if (!brandConfig) return;
+    dispatch(
+      updateBrandingState({
+        locations: brandConfig.locations.filter((loc) => loc.id !== id),
+      }),
+    );
   };
 
   const updateSocial = <K extends keyof SocialMedia>(
@@ -217,24 +232,22 @@ export default function BrandingManager() {
     field: K,
     value: SocialMedia[K],
   ): void => {
-    setBrandConfig((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        socialMedia: prev.socialMedia.map((social, i) =>
+    if (!brandConfig) return;
+    dispatch(
+      updateBrandingState({
+        socialMedia: brandConfig.socialMedia.map((social, i) =>
           i === index ? { ...social, [field]: value } : social,
         ),
-      };
-    });
+      }),
+    );
   };
 
   const addSocialMedia = (): void => {
-    setBrandConfig((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
+    if (!brandConfig) return;
+    dispatch(
+      updateBrandingState({
         socialMedia: [
-          ...prev.socialMedia,
+          ...brandConfig.socialMedia,
           {
             platform: "",
             url: "",
@@ -242,44 +255,155 @@ export default function BrandingManager() {
             enabled: true,
           },
         ],
-      };
-    });
+      }),
+    );
   };
 
   const removeSocial = (index: number): void => {
-    setBrandConfig((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        socialMedia: prev.socialMedia.filter((_, i) => i !== index),
-      };
-    });
+    if (!brandConfig) return;
+    dispatch(
+      updateBrandingState({
+        socialMedia: brandConfig.socialMedia.filter((_, i) => i !== index),
+      }),
+    );
   };
 
   const updateContact = <K extends keyof ContactInfo>(
     field: K,
     value: ContactInfo[K],
   ): void => {
-    setBrandConfig((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        contact: { ...prev.contact, [field]: value },
-      };
-    });
+    if (!brandConfig) return;
+    dispatch(
+      updateBrandingState({
+        contact: { ...brandConfig.contact, [field]: value },
+      }),
+    );
   };
 
   const updateLegal = <K extends keyof LegalInfo>(
     field: K,
     value: LegalInfo[K],
   ): void => {
-    setBrandConfig((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        legal: { ...prev.legal, [field]: value },
-      };
-    });
+    if (!brandConfig) return;
+    dispatch(
+      updateBrandingState({
+        legal: { ...brandConfig.legal, [field]: value },
+      }),
+    );
+  };
+
+  const toggleLanguage = (code: string): void => {
+    if (!brandConfig) return;
+    const available = brandConfig.languages.available.map((lang) =>
+      lang.code === code ? { ...lang, enabled: !lang.enabled } : lang,
+    );
+
+    let newDefault = brandConfig.languages.default;
+    if (code === brandConfig.languages.default) {
+      const firstEnabled = available.find((l) => l.enabled);
+      if (firstEnabled) newDefault = firstEnabled.code;
+    }
+
+    dispatch(
+      updateBrandingState({
+        languages: {
+          ...brandConfig.languages,
+          available,
+          default: newDefault,
+        },
+      }),
+    );
+  };
+
+  const setDefaultLanguage = (code: string): void => {
+    if (!brandConfig) return;
+    const available = brandConfig.languages.available.map((lang) =>
+      lang.code === code ? { ...lang, enabled: true } : lang,
+    );
+    dispatch(
+      updateBrandingState({
+        languages: {
+          ...brandConfig.languages,
+          available,
+          default: code,
+        },
+      }),
+    );
+  };
+
+  const toggleCurrency = (code: string): void => {
+    if (!brandConfig) return;
+    const available = brandConfig.currencies.available.map((curr) =>
+      curr.code === code ? { ...curr, enabled: !curr.enabled } : curr,
+    );
+
+    let newDefault = brandConfig.currencies.default;
+    if (code === brandConfig.currencies.default) {
+      const firstEnabled = available.find((c) => c.enabled);
+      if (firstEnabled) newDefault = firstEnabled.code;
+    }
+
+    dispatch(
+      updateBrandingState({
+        currencies: {
+          ...brandConfig.currencies,
+          available,
+          default: newDefault,
+        },
+      }),
+    );
+  };
+
+  const setDefaultCurrency = (code: string): void => {
+    if (!brandConfig) return;
+    const available = brandConfig.currencies.available.map((curr) =>
+      curr.code === code ? { ...curr, enabled: true } : curr,
+    );
+    dispatch(
+      updateBrandingState({
+        currencies: {
+          ...brandConfig.currencies,
+          available,
+          default: code,
+        },
+      }),
+    );
+  };
+
+  const removeLanguage = (code: string): void => {
+    if (!brandConfig) return;
+    const available = brandConfig.languages.available.filter(
+      (l) => l.code !== code,
+    );
+    let newDefault = brandConfig.languages.default;
+    if (code === brandConfig.languages.default) {
+      newDefault = available.length > 0 ? available[0].code : "";
+    }
+    dispatch(
+      updateBrandingState({
+        languages: { ...brandConfig.languages, available, default: newDefault },
+      }),
+    );
+  };
+
+  const removeCurrency = (code: string): void => {
+    if (!brandConfig) return;
+    const available = brandConfig.currencies.available.filter(
+      (c) => c.code !== code,
+    );
+    let newDefault = brandConfig.currencies.default;
+    if (code === brandConfig.currencies.default) {
+      newDefault = available.length > 0 ? available[0].code : "";
+    }
+    dispatch(
+      updateBrandingState({
+        currencies: {
+          ...brandConfig.currencies,
+          available,
+          default: newDefault,
+        },
+      }),
+    );
   };
 
   const sections: Section[] = [
@@ -288,8 +412,50 @@ export default function BrandingManager() {
     { id: "locations", label: "LOCATIONS" },
     { id: "contact", label: "CONTACT" },
     { id: "social", label: "SOCIAL MEDIA" },
+    { id: "regional", label: "REGIONAL & FINANCIAL" },
     { id: "legal", label: "LEGAL & PAYMENT" },
   ];
+
+  const handleCountrySelect = (data: {
+    languages: any[];
+    currencies: any[];
+    countryName: string;
+  }) => {
+    if (!brandConfig) return;
+
+    const newLanguages = [...brandConfig.languages.available];
+    data.languages.forEach((lang) => {
+      if (!newLanguages.find((l) => l.code === lang.code)) {
+        newLanguages.push(lang);
+      }
+    });
+
+    const newCurrencies = [...brandConfig.currencies.available];
+    data.currencies.forEach((curr) => {
+      if (!newCurrencies.find((c) => c.code === curr.code)) {
+        newCurrencies.push(curr);
+      }
+    });
+
+    dispatch(
+      updateBrandingState({
+        languages: {
+          ...brandConfig.languages,
+          available: newLanguages,
+          default:
+            brandConfig.languages.default ||
+            (newLanguages.length > 0 ? newLanguages[0].code : ""),
+        },
+        currencies: {
+          ...brandConfig.currencies,
+          available: newCurrencies,
+          default:
+            brandConfig.currencies.default ||
+            (newCurrencies.length > 0 ? newCurrencies[0].code : ""),
+        },
+      }),
+    );
+  };
 
   if (loading) {
     return (
@@ -775,6 +941,189 @@ export default function BrandingManager() {
                           </div>
                         </div>
                       ))}
+                  </div>
+                </div>
+              )}
+
+              {/* REGIONAL & FINANCIAL SECTION */}
+              {activeSection === "regional" && (
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-gold tracking-wide">
+                        REGIONAL & FINANCIAL
+                      </h2>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                        Configure localized intelligence and operational
+                        currency units.
+                      </p>
+                    </div>
+                    <CountrySearchModal onSelect={handleCountrySelect} />
+                  </div>
+
+                  <div className="space-y-8">
+                    {/* Languages Sub-section */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4 border-b border-neutral-800 pb-2">
+                        <Globe className="w-4 h-4 text-gold" />
+                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">
+                          Active Languages
+                        </h3>
+                      </div>
+
+                      {brandConfig &&
+                      brandConfig.languages.available.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {brandConfig.languages.available.map((lang) => (
+                            <div
+                              key={lang.code}
+                              className={`p-4 bg-ink border transition-all ${
+                                lang.enabled
+                                  ? "border-gold/50"
+                                  : "border-neutral-800 opacity-60"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                  <input
+                                    type="checkbox"
+                                    checked={lang.enabled}
+                                    onChange={() => toggleLanguage(lang.code)}
+                                    className="w-4 h-4 cursor-pointer"
+                                  />
+                                  <div>
+                                    <h3 className="font-bold text-white uppercase tracking-wider text-sm">
+                                      {lang.name}
+                                    </h3>
+                                    <p className="text-[10px] text-slate-500 font-mono">
+                                      CODE: {lang.code.toUpperCase()}
+                                    </p>
+                                  </div>
+                                </div>
+                                {lang.code === brandConfig.languages.default ? (
+                                  <span className="px-2 py-1 bg-gold text-ink text-[9px] font-black uppercase tracking-tighter">
+                                    Default
+                                  </span>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      disabled={!lang.enabled}
+                                      onClick={() =>
+                                        setDefaultLanguage(lang.code)
+                                      }
+                                      className={`text-[9px] font-bold uppercase tracking-widest px-2 py-1 border transition-all ${
+                                        lang.enabled
+                                          ? "text-gold border-gold/50 hover:bg-gold hover:text-ink"
+                                          : "text-slate-600 border-neutral-800 cursor-not-allowed"
+                                      }`}
+                                    >
+                                      Make Default
+                                    </button>
+                                    <button
+                                      onClick={() => removeLanguage(lang.code)}
+                                      className="p-1 text-slate-600 hover:text-red-500 transition-colors"
+                                      title="Remove language"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-8 border-2 border-dashed border-neutral-800 text-center">
+                          <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest italic">
+                            No regional intelligence deployed. Use discovery to
+                            add.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Currencies Sub-section */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4 border-b border-neutral-800 pb-2">
+                        <Layers className="w-4 h-4 text-gold" />
+                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">
+                          Active Currencies
+                        </h3>
+                      </div>
+
+                      {brandConfig &&
+                      brandConfig.currencies.available.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {brandConfig.currencies.available.map((curr) => (
+                            <div
+                              key={curr.code}
+                              className={`p-4 bg-ink border transition-all ${
+                                curr.enabled
+                                  ? "border-gold/50"
+                                  : "border-neutral-800 opacity-60"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                  <input
+                                    type="checkbox"
+                                    checked={curr.enabled}
+                                    onChange={() => toggleCurrency(curr.code)}
+                                    className="w-4 h-4 cursor-pointer"
+                                  />
+                                  <div>
+                                    <h3 className="font-bold text-white uppercase tracking-wider text-sm flex items-center gap-2">
+                                      <span className="text-gold font-mono">
+                                        {curr.symbol}
+                                      </span>{" "}
+                                      {curr.name}
+                                    </h3>
+                                    <p className="text-[10px] text-slate-500 font-mono">
+                                      CURRENCY: {curr.code.toUpperCase()}
+                                    </p>
+                                  </div>
+                                </div>
+                                {curr.code ===
+                                brandConfig.currencies.default ? (
+                                  <span className="px-2 py-1 bg-gold text-ink text-[9px] font-black uppercase tracking-tighter">
+                                    Default
+                                  </span>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      disabled={!curr.enabled}
+                                      onClick={() =>
+                                        setDefaultCurrency(curr.code)
+                                      }
+                                      className={`text-[9px] font-bold uppercase tracking-widest px-2 py-1 border transition-all ${
+                                        curr.enabled
+                                          ? "text-gold border-gold/50 hover:bg-gold hover:text-ink"
+                                          : "text-slate-600 border-neutral-800 cursor-not-allowed"
+                                      }`}
+                                    >
+                                      Make Default
+                                    </button>
+                                    <button
+                                      onClick={() => removeCurrency(curr.code)}
+                                      className="p-1 text-slate-600 hover:text-red-500 transition-colors"
+                                      title="Remove currency"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-8 border-2 border-dashed border-neutral-800 text-center">
+                          <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest italic">
+                            No functional currency units identified.
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

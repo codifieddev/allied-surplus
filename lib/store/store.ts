@@ -10,6 +10,7 @@ import productsReducer from "./products/productsSlices";
 import attributesReducer from "./attributes/attributeSlices";
 import adminUsersReducer from "./users/userSlice";
 import adminFormsReducer from "./forms/formsSlice";
+import brandingReducer from "./branding/brandingSlice";
 
 export const makeStore = () => {
   return configureStore({
@@ -25,6 +26,7 @@ export const makeStore = () => {
       adminOrders: adminOrdersReducer,
       adminUsers: adminUsersReducer,
       adminForms: adminFormsReducer,
+      branding: brandingReducer,
     },
   });
 };

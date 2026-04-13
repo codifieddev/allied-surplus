@@ -22,16 +22,29 @@ import {
   Star,
   Terminal,
   LogOut,
+  Globe,
 } from "lucide-react";
-import { Link } from "@/lib/router";
-import { cn } from "@/lib/utils";
-import { AppDispatch, RootState } from "@/lib/store/store";
 import { useDispatch, useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { Link, useParams } from "@/lib/router";
 import { selectCartCount } from "@/lib/store/cart/cartSlice";
 import Image from "next/image";
 import { logout } from "@/lib/store/auth/authSlice";
 import { logoutThunk } from "@/lib/store/auth/authThunks";
+import { AppDispatch, RootState } from "@/lib/store/store";
+import { cn, getWithExpiry, setWithExpiry } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import {
+  loadCurrencyFromStorage,
+  setCurrenyCurrency,
+} from "@/lib/store/branding/brandingSlice";
 
 const navLinks = [
   { label: "Sales", highlight: true, href: "/shop?badge=sale" },
@@ -99,6 +112,23 @@ type BrandConfigType = {
   locations?: BrandLocation[];
   logos?: BrandLogo[];
   socialMedia?: BrandSocial[];
+  languages?: {
+    available?: {
+      code: string;
+      name: string;
+      enabled: boolean;
+    }[];
+    default?: string;
+  };
+  currencies?: {
+    available?: {
+      code: string;
+      name: string;
+      enabled: boolean;
+      symbol: string;
+    }[];
+    default?: string;
+  };
 };
 
 export default function SiteChrome({
@@ -113,9 +143,59 @@ export default function SiteChrome({
   const [availableCategories] = useState(defaultCategoryPanel);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const { currencyselector, config } = useAppSelector(
+    (state) => state.branding,
+  );
+
+  const defaultCurrency = config?.currencies.default;
+
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (config) {
+      dispatch(loadCurrencyFromStorage());
+    }
+  }, [config]);
+
+  useEffect(() => {
+    const fetchRates = async (defaultCurrent: string) => {
+      const req = await fetch(
+        `https://api.frankfurter.dev/v2/rates?base=${defaultCurrent}`,
+      );
+      const res = await req.json();
+      const getCurrency = getWithExpiry("rates");
+      if (!getCurrency) {
+        setWithExpiry("rates", res, 24 * 60 * 60 * 1000);
+      }
+    };
+
+    if (defaultCurrency) {
+      fetchRates(defaultCurrency);
+    }
+  }, [defaultCurrency]);
+
+  const { locale } = useParams<{ locale: string }>();
+  const pathname = usePathname();
+
   const cartCount = useSelector(selectCartCount);
   const { user } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
+
+  const handleLanguageChange = (newLocale: string) => {
+    const segments = pathname.split("/");
+    segments[1] = newLocale;
+    router.replace(segments.join("/") || "/");
+  };
+
+  const availableLanguages = useMemo(
+    () => brandConfig?.languages?.available?.filter((l) => l.enabled) || [],
+    [brandConfig?.languages?.available],
+  );
+
+  const availableCurrencies = useMemo(
+    () => brandConfig?.currencies?.available?.filter((l) => l.enabled) || [],
+    [brandConfig?.currencies?.available],
+  );
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 100);
@@ -163,8 +243,6 @@ export default function SiteChrome({
     () => (brandConfig?.socialMedia || []).filter((item) => item.enabled),
     [brandConfig?.socialMedia],
   );
-
-  const dispatch = useDispatch<AppDispatch>();
 
   const renderSocialIcon = (platform: string) => {
     const normalized = platform.toLowerCase();
@@ -337,6 +415,34 @@ export default function SiteChrome({
                   <Phone size={16} /> {primaryPhone}
                 </a>
               )}
+
+              {/* Mobile Language Switcher */}
+              {availableLanguages.length > 1 && (
+                <div className="pt-6 border-t border-white/10 space-y-3">
+                  <p className="text-[10px] font-black tracking-[0.25em] text-white/30 uppercase italic">
+                    Language
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {availableLanguages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          handleLanguageChange(lang.code);
+                          setIsMenuOpen(false);
+                        }}
+                        className={cn(
+                          "px-3 py-1.5 text-xs font-bold tracking-wider rounded-[2px] border transition-all",
+                          locale === lang.code
+                            ? "bg-gold text-ink border-gold"
+                            : "bg-transparent text-white/60 border-white/10 hover:border-white/20",
+                        )}
+                      >
+                        {lang.name.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -378,21 +484,21 @@ export default function SiteChrome({
             ))}
           </div>
 
-          <div className="topbar__links flex gap-5 items-center">
+          <div className="topbar__links flex gap-3.5 items-center ml-auto">
             {user ? (
               <Link
                 href="/login"
                 onClick={() => {
                   dispatch(logoutThunk());
                 }}
-                className="flex items-center gap-1.5 hover:text-gold transition-colors"
+                className="flex items-center gap-1.5 hover:text-gold transition-colors whitespace-nowrap uppercase font-bold tracking-tighter"
               >
                 <LogOut size={12} /> Log out
               </Link>
             ) : (
               <Link
                 href="/login"
-                className="flex items-center gap-1.5 hover:text-gold transition-colors"
+                className="flex items-center gap-1.5 hover:text-gold transition-colors whitespace-nowrap uppercase font-bold tracking-tighter"
               >
                 <User size={12} /> Login
               </Link>
@@ -400,24 +506,53 @@ export default function SiteChrome({
             <span className="topbar__sep text-white/20">|</span>
             <Link
               href="/wishlist"
-              className="flex items-center gap-1.5 hover:text-gold transition-colors"
+              className="flex items-center gap-1.5 hover:text-gold transition-colors whitespace-nowrap uppercase font-bold tracking-tighter"
             >
               <Heart size={12} /> Wishlist
             </Link>
             <span className="topbar__sep text-white/20">|</span>
             <Link
               href="/order-tracking"
-              className="flex items-center gap-1.5 hover:text-gold transition-colors"
+              className="flex items-center gap-1.5 hover:text-gold transition-colors whitespace-nowrap uppercase font-bold tracking-tighter"
             >
               <Truck size={12} /> Order Tracking
             </Link>
             {user?.role !== "customer" && (
               <Link
                 href="/admin"
-                className="flex p-1 border-2 border-gold items-center gap-1.5 hover:text-gold transition-colors"
+                className="flex px-2 py-0.5 border border-gold/50 items-center gap-1.5 hover:text-gold hover:border-gold transition-all whitespace-nowrap uppercase font-bold tracking-tighter"
               >
                 <Terminal size={12} /> Admin
               </Link>
+            )}
+
+            {/* Language Switcher */}
+            {availableLanguages.length > 1 && (
+              <>
+                <span className="topbar__sep text-white/20">|</span>
+                <div className="flex items-center gap-1.5 group relative">
+                  <Globe size={12} className="text-gold" />
+                  <select
+                    value={locale}
+                    onChange={(e) => handleLanguageChange(e.target.value)}
+                    className="bg-transparent text-white/55 border-none outline-none cursor-pointer hover:text-gold transition-colors appearance-none pr-3 uppercase font-bold tracking-tighter text-[11px]"
+                  >
+                    {availableLanguages.map((lang) => (
+                      <option
+                        key={lang.code}
+                        value={lang.code}
+                        className="bg-charcoal text-white"
+                      >
+                        {lang.name.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    size={10}
+                    className="absolute right-0 pointer-events-none opacity-40 group-hover:opacity-100"
+                  />
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -952,6 +1087,31 @@ export default function SiteChrome({
                   {p}
                 </span>
               ))}
+
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-gold opacity-50 block">
+                  Currency
+                </label>
+                <Select
+                  onValueChange={(value) => {
+                    dispatch(setCurrenyCurrency(value));
+                  }}
+                  value={currencyselector || ""}
+                >
+                  <SelectTrigger className="h-10 bg-ink border-charcoal-light text-xs text-white font-black uppercase tracking-widest">
+                    <SelectValue placeholder="Select Currency" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-charcoal border-gold text-white font-black uppercase tracking-widest text-[10px]">
+                    {availableCurrencies.map((d) => {
+                      return (
+                        <SelectItem key={d.code} value={d.code}>
+                          {d.name}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </div>

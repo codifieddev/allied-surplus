@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Bell, Shield } from "lucide-react";
 import StoreProvider from "@/app/StoreProvider";
+import { getTenantRegistry } from "@/lib/getPageData";
+import BrandingInitializer from "@/components/branding/BrandingInitializer";
 import GetAllAttributes from "@/lib/GetAllDetails/GetAllAttributes";
 import GetAllCategories from "@/lib/GetAllDetails/GetAllCategories";
 import GetAllProducts from "@/lib/GetAllDetails/GetAllProducts";
@@ -35,6 +37,7 @@ export default async function DashboardLayout({
 }) {
   const cookieStore = await cookies();
   const token = cookieStore.get("auth_token")?.value;
+  const tenantRegistry = await getTenantRegistry();
 
   let isAuthenticated = false;
 
@@ -57,7 +60,8 @@ export default async function DashboardLayout({
   }
 
   return (
-    <StoreProvider>
+    <>
+      <BrandingInitializer initialConfig={tenantRegistry} />
       <GetUser user={user} />
       <GetAllAttributes />
       <GetAllCategories />
@@ -113,6 +117,6 @@ export default async function DashboardLayout({
           </div>
         </SidebarInset>
       </SidebarProvider>
-    </StoreProvider>
+    </>
   );
 }

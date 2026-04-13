@@ -68,7 +68,7 @@ const categoryShowcase = [
   },
 ];
 
-export default function HomePage() {
+export default function HomePage({ pageData }: { pageData: any }) {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
 
@@ -77,6 +77,10 @@ export default function HomePage() {
     setToastVisible(true);
     setTimeout(() => setToastVisible(false), 3000);
   };
+
+  const heroSection = pageData?.content?.find(
+    (section: any) => section.adminTitle === "Hero",
+  );
 
   return (
     <div className="homepage-root">
@@ -101,7 +105,7 @@ export default function HomePage() {
         </span>
       </div>
 
-      <HeroSection showToast={showToast} />
+      <HeroSection heroSection={heroSection} showToast={showToast} />
 
       {/* TRUST BADGES SECTION */}
       <section className="bg-ink border-b border-white/5">
@@ -490,7 +494,7 @@ export default function HomePage() {
                 COMMUNITY
               </h2>
               <p className="text-white/80 text-[16px] leading-relaxed max-w-[480px]">
-                Get exclusive access to new arrivals, product reviews, 
+                Get exclusive access to new arrivals, product reviews,
                 field-tested guides, and member-only discounts delivered
                 straight to your inbox.
               </p>
