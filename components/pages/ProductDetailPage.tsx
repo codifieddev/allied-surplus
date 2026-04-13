@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, Link } from "@/lib/router";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -25,6 +25,14 @@ import { composeVariantKey } from "@/lib/admin-products/utils";
 import { ProductFormState } from "@/lib/store/products/productsSlices";
 import { updateProfileThunk } from "@/lib/store/auth/authThunks";
 import { toast } from "sonner";
+import { getWithExpiry } from "@/lib/utils";
+
+interface Rate {
+  date: string;
+  base: string;
+  quote: string;
+  rate: number;
+}
 
 const ProductDetailPage = ({
   currentProduct,
@@ -41,7 +49,36 @@ const ProductDetailPage = ({
     (state: RootState) => state.cart,
   );
 
+  const [currencyRates, setCurrencyRates] = useState<Rate[]>([]);
+
+  useEffect(() => {
+    const rates = getWithExpiry("rates");
+    setCurrencyRates(rates || []);
+  }, []);
+
   const { user } = useSelector((state: RootState) => state.auth);
+
+  const { currencyselector, config } = useSelector(
+    (state: RootState) => state.branding,
+  );
+
+  const currentCurrencySymbol = useMemo(() => {
+    if (!currencyselector) return null;
+    return config?.currencies.available.find((d) => d.code == currencyselector);
+  }, [currencyselector]);
+
+  const exChangeMoney = useCallback(
+    (rates: Rate[], currentCurrency: string, value: number) => {
+      const foundRate = rates.find((d) => d.quote === currentCurrency);
+
+      if (foundRate) {
+        return value * foundRate.rate;
+      }
+
+      return value; // fallback if rate not found
+    },
+    [],
+  );
 
   const { id } = useParams<{ id: string }>();
   const [quantity, setQuantity] = useState(1);
@@ -232,21 +269,35 @@ const ProductDetailPage = ({
     return Object.keys(errors).length === 0;
   };
 
-  // Get current price
   const currentPrice = useMemo(() => {
+    const price = exChangeMoney(
+      currencyRates,
+      String(currencyselector),
+      parseFloat(currentProduct?.pricing?.price || 0),
+    );
     if (selectedVariant) {
-      return `₹${parseInt(selectedVariant.price).toLocaleString("en-IN")}`;
+      console.log(selectedVariant.price);
+      const price = exChangeMoney(
+        currencyRates,
+        String(currencyselector),
+        parseFloat(selectedVariant.price),
+      );
+      return `${currentCurrencySymbol?.symbol}${price}`;
     }
-    return `₹${parseInt(currentProduct?.pricing?.price || 0).toLocaleString("en-IN")}`;
-  }, [selectedVariant, currentProduct]);
+    return `${currentCurrencySymbol?.symbol}${price}`;
+  }, [selectedVariant, currentProduct, currencyselector]);
 
-  // Get compare at price
   const compareAtPrice = useMemo(() => {
+    const price = exChangeMoney(
+      currencyRates,
+      String(currencyselector),
+      parseFloat(currentProduct.pricing.compareAtPrice),
+    );
     if (currentProduct?.pricing?.compareAtPrice) {
-      return `₹${parseInt(currentProduct.pricing.compareAtPrice).toLocaleString("en-IN")}`;
+      return `${currentCurrencySymbol?.symbol}${price}`;
     }
     return null;
-  }, [currentProduct]);
+  }, [currentProduct, currencyselector]);
 
   // Calculate discount percentage
   const discountPercentage = useMemo(() => {

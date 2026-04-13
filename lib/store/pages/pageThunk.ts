@@ -1,103 +1,106 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { Page } from './pageType';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { Page } from "./pageType";
 
 // Fetch all pages
 export const fetchPagesThunk = createAsyncThunk(
-  'pages/fetchAll',
+  "pages/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/pages');
+      const response = await fetch("/api/pages");
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch pages');
+        throw new Error(errorData.message || "Failed to fetch pages");
       }
-      const data= await response.json();
-      console.log("pagesg fetched ", data)
+      const data = await response.json();
+      console.log("pagesg fetched ", data);
       return data.pages;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 // Fetch a single page by slug
 export const fetchPageBySlugThunk = createAsyncThunk(
-  'pages/fetchBySlug',
+  "pages/fetchBySlug",
   async (slug: string, { rejectWithValue }) => {
     try {
       const response = await fetch(`/api/pages?slug=${slug}`);
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch page');
+        throw new Error(errorData.message || "Failed to fetch page");
       }
       return await response.json();
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 // Create a new page
 export const createPageThunk = createAsyncThunk(
-  'pages/create',
+  "pages/create",
   async (pageData: Page, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/pages', {
-        method: 'POST',
+      const response = await fetch("/api/pages", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(pageData),
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create page');
+        throw new Error(errorData.message || "Failed to create page");
       }
       return await response.json();
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 // Update an existing page
 export const updatePageThunk = createAsyncThunk(
-  'pages/update',
-  async ({ id, pageData }: { id: string; pageData: Partial<Page> }, { rejectWithValue }) => {
+  "pages/update",
+  async (
+    { id, pageData }: { id: string; pageData: Partial<Page> },
+    { rejectWithValue },
+  ) => {
     try {
-      const response = await fetch(`/api/pages?id=${id}`, {
-        method: 'PUT',
+      const response = await fetch(`/api/pages/${id}`, {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(pageData),
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update page');
+        throw new Error(errorData.message || "Failed to update page");
       }
       return await response.json();
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 // Delete a page
 export const deletePageThunk = createAsyncThunk(
-  'pages/delete',
+  "pages/delete",
   async (id: string, { rejectWithValue }) => {
     try {
       const response = await fetch(`/api/pages?id=${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete page');
+        throw new Error(errorData.message || "Failed to delete page");
       }
       return id;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );

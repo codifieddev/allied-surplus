@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useAppSelector } from "@/lib/store/hooks";
 
 interface SectionBlockProps {
   section: any;
@@ -47,6 +48,8 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
   isLast,
 }) => {
   const [isOpen, setIsOpen] = useState(true);
+  const { config: brandConfig } = useAppSelector((state) => state.branding);
+  const defaultLang = brandConfig?.languages?.default || "en";
 
   useEffect(() => {
     if (!section.columns || section.columns.length === 0) {
@@ -90,17 +93,23 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
     const newItem = {
       id: Math.random().toString(36).substr(2, 9),
       type,
-      ...(type === "heading" ? { level: "h2", text: "NEW TACTICAL HEADING" } : {}),
-      ...(type === "paragraph" ? { text: "" } : {}),
-      ...(type === "image" ? { url: "", alt: "" } : {}),
-      ...(type === "button" ? { buttons: [{ id: Math.random().toString(36).substr(2, 9), label: "ACTION", link: "#", actionType: "link" }] } : {}),
-      ...(type === "list" ? { items: [""] } : {}),
+      ...(type === "heading" ? { level: "h2", text: { [defaultLang]: "NEW TACTICAL HEADING" } } : {}),
+      ...(type === "paragraph" ? { text: { [defaultLang]: "" } } : {}),
+      ...(type === "image" ? { url: "", alt: { [defaultLang]: "" } } : {}),
+      ...(type === "button" ? { buttons: [{ id: Math.random().toString(36).substr(2, 9), label: { [defaultLang]: "ACTION" }, link: "#", actionType: "link" }] } : {}),
+      ...(type === "list" ? { items: [{ [defaultLang]: "" }] } : {}),
       ...(type === "section" ? { layout: "grid-1", columns: [[]] } : {}),
-      ...(type === "carousel" ? { items: [{ id: Math.random().toString(36).substr(2, 9), adminTitle: "TACTICAL SLIDE", layout: "grid-1", columns: [[]] }] } : {}),
-      ...(type === "cta" ? { title: "", subtitle: "", description: "", buttonLabel: "", buttonLink: "" } : {}),
+      ...(type === "carousel" ? { items: [{ id: Math.random().toString(36).substr(2, 9), adminTitle: { [defaultLang]: "TACTICAL SLIDE" }, layout: "grid-1", columns: [[]] }] } : {}),
+      ...(type === "cta" ? { 
+          title: { [defaultLang]: "" }, 
+          subtitle: { [defaultLang]: "" }, 
+          description: { [defaultLang]: "" }, 
+          buttonLabel: { [defaultLang]: "" }, 
+          buttonLink: "" 
+      } : {}),
       ...(type === "cards" ? { items: [] } : {}),
       ...(type === "features" ? { items: [] } : {}),
-      ...(type === "testimonial" ? { quote: "", author: "", role: "", avatar: "" } : {}),
+      ...(type === "testimonial" ? { quote: { [defaultLang]: "" }, author: { [defaultLang]: "" }, role: { [defaultLang]: "" }, avatar: "" } : {}),
     };
 
     const newCols = [...(section.columns || [[]])];
@@ -143,8 +152,8 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
   const totalItemCount = columns.reduce((acc: number, col: any[]) => acc + (col?.length || 0), 0);
 
   return (
-    <div className="bg-charcoal border-2 border-charcoal-light rounded-none p-6 space-y-6 relative group/section transition-all hover:border-gold/50 shadow-2xl border-l-4 border-l-gold">
-      <div className="flex flex-wrap items-center justify-between gap-6 pb-6 border-b border-charcoal-light">
+    <div className="bg-charcoal border-2 border-charcoal-light rounded-none p-4 space-y-4 relative group/section transition-all hover:border-gold/50 shadow-2xl border-l-4 border-l-gold">
+      <div className="flex flex-wrap items-center justify-between gap-6 pb-4 border-b border-charcoal-light">
         <div className="flex items-center gap-4 flex-1 min-w-[200px]">
           <Button
             variant="ghost"
@@ -234,24 +243,24 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
 
       {isOpen && (
         <div className={cn(
-          "grid gap-10 animate-in fade-in duration-300",
+          "grid gap-6 animate-in fade-in duration-300",
           columns.length === 1 ? "grid-cols-1" : 
           columns.length === 2 ? "grid-cols-2" :
           columns.length === 3 ? "grid-cols-3" : "grid-cols-4"
         )}>
           {columns.map((col: any[], colIdx: number) => (
             <div key={colIdx} className={cn(
-              "space-y-6 pb-6 relative",
-              columns.length > 1 ? "border-r border-charcoal-light last:border-r-0 pr-8 last:pr-0" : ""
+              "space-y-4 pb-4 relative",
+              columns.length > 1 ? "border-r border-charcoal-light last:border-r-0 pr-6 last:pr-0" : ""
             )}>
               {columns.length > 1 && (
-                <div className="flex items-center gap-3 mb-6 bg-ink border border-charcoal-light p-2 w-fit">
+                <div className="flex items-center gap-3 mb-4 bg-ink border border-charcoal-light p-2 w-fit">
                    <ColumnsIcon size={12} className="text-gold" />
                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Sector {colIdx+1}</span>
                 </div>
               )}
               
-              <div className="space-y-6 min-h-[100px] bg-ink/20 p-2 border border-charcoal-light/30 border-dashed">
+              <div className="space-y-3 min-h-[80px] bg-ink/20 p-1.5 border border-charcoal-light/30 border-dashed">
                 {(col || []).map((item: any, idx: number) => (
                   <ContentItem
                     key={item.id}
@@ -266,7 +275,7 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
                 ))}
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 pt-6 border-t border-charcoal-light mt-6">
+              <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-charcoal-light mt-4">
                  {[
                    { type: "heading", label: "Heading", icon: Plus },
                    { type: "paragraph", label: "Intel Text", icon: Plus },

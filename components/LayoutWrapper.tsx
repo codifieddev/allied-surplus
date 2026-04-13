@@ -12,11 +12,12 @@ export default function LayoutWrapper({
   const pathname = usePathname();
 
   // If we are anywhere inside the admin panel, or on the login/signup pages, do not render the storefront header and footer
-  if (
-    pathname?.startsWith("/admin") ||
-    pathname === "/login" ||
-    pathname === "/signup"
-  ) {
+  const segments = pathname?.split("/") || [];
+  const isExcluded = segments.some(
+    (s) => s === "admin" || s === "login" || s === "signup",
+  );
+
+  if (isExcluded) {
     return <>{children}</>;
   }
 

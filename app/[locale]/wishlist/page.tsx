@@ -7,18 +7,13 @@ import {
   ArrowRight,
   ShoppingBag,
   ChevronRight,
-  Loader2,
-  Sparkles,
   Search,
   ArrowLeft,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/lib/store/store";
-import { fetchProducts } from "@/lib/store/products/productsThunk";
-import { toggleWishlist } from "@/lib/store/auth/authSlice";
 import { Link } from "@/lib/router";
 import { motion, AnimatePresence } from "motion/react";
-import { cn } from "@/lib/utils";
 import { ProductFormState } from "@/lib/store/products/productsSlices";
 import { toast } from "sonner";
 import { updateProfileThunk } from "@/lib/store/auth/authThunks";
