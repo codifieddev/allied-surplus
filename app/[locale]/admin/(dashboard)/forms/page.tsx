@@ -93,7 +93,7 @@ export default function FormsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {allForms.map((form) => (
             <div
-              key={form._id}
+              key={form.id}
               className="bg-charcoal border border-white/5 p-6 rounded-sm shadow-xl hover:border-white/10 transition-all group flex flex-col justify-between h-56 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-24 h-24 bg-gold/5 rotate-45 translate-x-12 -translate-y-12" />
@@ -118,7 +118,7 @@ export default function FormsPage() {
                 <div className="flex items-center gap-1 font-bold text-[9px] text-white/10 uppercase italic">
                   <span>ID:</span>
                   <span className="text-white/20 tracking-tighter">
-                    {form._id.slice(-8)}
+                    {form.id.slice(-8)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -126,7 +126,7 @@ export default function FormsPage() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-white/20 hover:text-gold hover:bg-gold/5"
-                    onClick={() => router.push(`/admin/forms/${form._id}/edit`)}
+                    onClick={() => router.push(`/admin/forms/${form.id}/edit`)}
                   >
                     <Edit size={16} />
                   </Button>
@@ -134,7 +134,7 @@ export default function FormsPage() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-white/20 hover:text-red hover:bg-red/5"
-                    onClick={() => handleDelete(form._id, form.name)}
+                    onClick={() => handleDelete(form.id, form.name)}
                   >
                     <Trash2 size={16} />
                   </Button>

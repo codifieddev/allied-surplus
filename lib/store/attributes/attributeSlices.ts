@@ -25,7 +25,7 @@ export type AttributeSetDraft = {
 };
 
 export type AttributeSetRecord = {
-  _id: string;
+  id?: string;
   name: string;
   key?: string;
   appliesTo?: string;
@@ -40,6 +40,9 @@ export type AttributeSetRecord = {
   }>;
   isSystem?: boolean;
   businessType?: string;
+  verticalBindings?: string[];
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 type AttributeState = {
@@ -104,7 +107,7 @@ const attributeSlice = createSlice({
         state.attributeLoading = false;
         const data = action.payload.data;
         state.allattributes = state.allattributes.map((attr) =>
-          attr._id === data._id ? data : attr,
+          attr.id === data.id ? data : attr,
         );
       })
       .addCase(updateAttributeSet.rejected, (state, action) => {
@@ -113,8 +116,9 @@ const attributeSlice = createSlice({
       // Delete
       .addCase(deleteAttributeSet.fulfilled, (state, action) => {
         state.attributeLoading = false;
+        console.log(action.payload.data)
         state.allattributes = state.allattributes.filter(
-          (attr) => attr._id !== action.payload.data,
+          (attr) => attr.id !== action.payload.data,
         );
       })
       .addCase(deleteAttributeSet.rejected, (state, action) => {

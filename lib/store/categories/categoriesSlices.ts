@@ -21,6 +21,9 @@ export type CategoryRecord = {
   bannerImageUrl?: string;
   metaTitle?: string;
   metaDescription?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  id?: string;
 };
 
 type CategoryState = {

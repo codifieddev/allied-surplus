@@ -13,7 +13,9 @@ import { RootState } from "@/lib/store/store";
 export default function NewFormPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { loading } = useAppSelector((state: RootState) => state.adminForms);
+  const { loading: formloading } = useAppSelector(
+    (state: RootState) => state.adminForms,
+  );
 
   const handleSave = async (name: string, fields: FormField[]) => {
     try {
@@ -47,7 +49,7 @@ export default function NewFormPage() {
         </div>
       </div>
 
-      <FormBuilder onSave={handleSave} loading={loading} />
+      <FormBuilder onSave={handleSave} loading={formloading} />
     </div>
   );
 }

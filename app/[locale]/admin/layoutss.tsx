@@ -11,6 +11,7 @@ import { ObjectId } from "mongodb";
 import { connectTenantDB } from "@/lib/db";
 import BrandingInitializer from "@/components/branding/BrandingInitializer";
 import StoreProvider from "@/app/StoreProvider";
+import { getAuthUser } from "@/lib/getSingleUser";
 
 const barlow = Barlow({
   subsets: ["latin"],
@@ -42,22 +43,25 @@ export default async function AdminRootLayout({
   const token = cookieStore.get("auth_token")?.value;
   const db = await connectTenantDB();
 
-  let user: any = null;
+  let user: any = await getAuthUser(token || "");
+  // let user: any = null;
 
-  if (token) {
-    try {
-      let check = jwt.verify(token, JWT_SECRET);
-      if (check) {
-        let decodedUser: any = jwt.decode(token);
-        let nonserialise = await db
-          .collection("users")
-          .findOne({ _id: new ObjectId(decodedUser!.id) });
-        user = JSON.parse(JSON.stringify(nonserialise));
-      }
-    } catch (e) {
-      // Not authenticated
-    }
-  }
+  console.log("+++++++>>>", user);
+
+  // if (token) {
+  //   try {
+  //     let check = jwt.verify(token, JWT_SECRET);
+  //     if (check) {
+  //       let decodedUser: any = jwt.decode(token);
+  //       let nonserialise = await db
+  //         .collection("users")
+  //         .findOne({ _id: new ObjectId(decodedUser!.id) });
+  //       user = JSON.parse(JSON.stringify(nonserialise));
+  //     }
+  //   } catch (e) {
+  //     // Not authenticated
+  //   }
+  // }
 
   return (
     <html

@@ -20,14 +20,11 @@ import {
   setPricingField,
   setCurrentProduct,
 } from "@/lib/store/products/productsSlices";
-import { saveProduct, fetchProducts } from "@/lib/store/products/productsThunk";
-import { fetchCategories } from "@/lib/store/categories/categoriesThunk";
-import { fetchAttributes } from "@/lib/store/attributes/attributesThunk";
+import { saveProduct } from "@/lib/store/products/productsThunk";
 import { fetchForms } from "@/lib/store/forms/formsThunk";
 
 import {
   VariantRow,
-  slugify,
   sanitizeKey,
   buildCombinationTitle,
   buildVariantCombinations,
@@ -67,9 +64,11 @@ export function TacticalProductStudio() {
   const [productSlug, setProductSlug] = useState("");
 
   const relatedProductCandidates = useMemo(
-    () => allProducts.filter((item: any) => item._id !== editId),
+    () => allProducts.filter((item: any) => item.id !== editId),
     [allProducts, editId],
   );
+
+  console.log("relatedProductCandidates", relatedProductCandidates);
 
   // Initial Load
   useEffect(() => {
@@ -96,9 +95,7 @@ export function TacticalProductStudio() {
   // Sync editId with form
   useEffect(() => {
     if (isEditing && editId && allProducts.length > 0) {
-      const singleProduct = allProducts.find(
-        (item: any) => item._id === editId,
-      );
+      const singleProduct = allProducts.find((item: any) => item.id === editId);
       if (singleProduct) {
         dispatch(setCurrentProduct(singleProduct));
         setProductSlug(singleProduct.slug || "");

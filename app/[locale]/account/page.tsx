@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   MapPin,
@@ -28,6 +28,8 @@ import { updateProfileThunk } from "@/lib/store/auth/authThunks";
 export default function AccountPage() {
   const { user } = useSelector((state: RootState) => state.auth);
 
+  console.log(user);
+
   // State management
   const [activeTab, setActiveTab] = useState<
     "profile" | "addresses" | "security"
@@ -37,8 +39,8 @@ export default function AccountPage() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   // Form states
   const [profileForm, setProfileForm] = useState({
-    name: user?.name || "",
-    username: user?.username || "",
+    first_name: user?.first_name || "",
+    last_name: user?.last_name || "",
   });
 
   const [addressForm, setAddressForm] = useState<Address>({
@@ -84,26 +86,31 @@ export default function AccountPage() {
         addressForm.zipCode &&
         addressForm.country
       ) {
-        const newAddress = structuredClone(addressForm);
+        const newId = crypto.randomUUID();
+        const newAddress = { ...addressForm, id: newId };
 
-        const req = await fetch(`/api/auth/${user!.id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ address: newAddress }),
-        });
+        let updatedAddresses = [...(user?.addresses || [])];
 
-        const res = await req.json();
-
-        if (res.success) {
-          dispatch(updateAddress([...(user?.address || []), newAddress]));
-        } else {
-          toast.error(res.error || "Failed to add address");
+        if (newAddress.isDefault) {
+          updatedAddresses = updatedAddresses.map((addr) => ({
+            ...addr,
+            isDefault: false,
+          }));
         }
 
-        resetAddressForm();
-        setIsAddingAddress(false);
+        updatedAddresses.push(newAddress);
+
+        const updatedData = await dispatch(
+          updateProfileThunk({ userData: { addresses: updatedAddresses } }),
+        ).unwrap();
+
+        if (updatedData.data) {
+          toast.success("Address added successfully");
+          resetAddressForm();
+          setIsAddingAddress(false);
+        } else {
+          toast.error(updatedData.message || "Failed to add address");
+        }
       }
     } catch (error) {
       console.error("Error adding address:", error);
@@ -114,25 +121,34 @@ export default function AccountPage() {
   const handleUpdateAddress = async () => {
     if (editingAddressId) {
       try {
-        const updatedAddress = { ...addressForm, _id: editingAddressId };
+        const updatedAddress = { ...addressForm, id: editingAddressId };
+        let updatedAddresses = [...(user?.addresses || [])];
+
+        if (updatedAddress.isDefault) {
+          updatedAddresses = updatedAddresses.map((addr) => ({
+            ...addr,
+            isDefault: false,
+          }));
+        }
+
+        updatedAddresses = updatedAddresses.map((addr) =>
+          addr.id === editingAddressId ? updatedAddress : addr,
+        );
 
         const updatedData = await dispatch(
           updateProfileThunk({
-            userData: { address: updatedAddress },
-            userId: user!._id,
-            editingAddressId,
+            userData: { addresses: updatedAddresses },
           }),
         ).unwrap();
 
-        if (updatedData.success) {
+        if (updatedData.data) {
           toast.success("Address updated successfully");
+          resetAddressForm();
+          setEditingAddressId(null);
+          setIsAddingAddress(false);
         } else {
-          toast.error(updatedData.error || "Failed to update address");
+          toast.error(updatedData.message || "Failed to update address");
         }
-
-        resetAddressForm();
-        setEditingAddressId(null);
-        setIsAddingAddress(false);
       } catch (error) {
         console.error("Error updating address:", error);
         toast.error("Something went wrong while updating address");
@@ -142,18 +158,20 @@ export default function AccountPage() {
 
   const handleDeleteAddress = async (id: string) => {
     try {
+      const updatedAddresses = (user?.addresses || []).filter(
+        (addr) => addr.id !== id,
+      );
+
       const updatedData = await dispatch(
         updateProfileThunk({
-          userData: { address: {} },
-          userId: user!._id,
-          deleteaddressId: id,
+          userData: { addresses: updatedAddresses },
         }),
       ).unwrap();
 
-      if (updatedData.success) {
+      if (updatedData.data) {
         toast.success("Address deleted successfully");
       } else {
-        toast.error(updatedData.error || "Failed to delete address");
+        toast.error(updatedData.message || "Failed to delete address");
       }
     } catch (error) {
       console.error("Error deleting address:", error);
@@ -163,7 +181,7 @@ export default function AccountPage() {
 
   const handleEditAddress = (address: Address) => {
     setAddressForm(address);
-    setEditingAddressId(address._id || null);
+    setEditingAddressId(address.id || null);
     setIsAddingAddress(true);
   };
 
@@ -193,7 +211,7 @@ export default function AccountPage() {
   const handleUpdateProfile = async () => {
     try {
       const updatedData = await dispatch(
-        updateProfileThunk({ userData: profileForm, userId: user!._id }),
+        updateProfileThunk({ userData: profileForm }),
       ).unwrap();
 
       if (updatedData.success) {
@@ -209,8 +227,8 @@ export default function AccountPage() {
 
   const handleCancelProfileEdit = () => {
     setProfileForm({
-      name: user?.name || "",
-      username: user?.username || "",
+      first_name: user?.first_name || "",
+      last_name: user?.last_name || "",
     });
     setIsEditingProfile(false);
   };
@@ -255,11 +273,9 @@ export default function AccountPage() {
               </div>
               <div>
                 <h2 className="font-head text-xl sm:text-2xl font-bold text-white uppercase">
-                  {user?.name}
+                  {user?.first_name} {user?.last_name}
                 </h2>
-                <p className="text-white/50 text-sm italic">
-                  @{user?.username}
-                </p>
+
                 <div className="flex items-center gap-2 mt-1">
                   <Calendar size={12} className="text-gold" />
                   <p className="text-white/40 text-xs uppercase tracking-wider">
@@ -334,45 +350,52 @@ export default function AccountPage() {
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <label className="block text-white/60 text-xs font-bold uppercase tracking-wider mb-2 italic">
-                    Full Name
-                  </label>
-                  {isEditingProfile ? (
-                    <input
-                      type="text"
-                      value={profileForm.name}
-                      onChange={(e) =>
-                        setProfileForm({ ...profileForm, name: e.target.value })
-                      }
-                      className="w-full bg-dark border border-white/20 text-white px-4 py-3 rounded-[3px] outline-none focus:border-olive transition-all italic"
-                    />
-                  ) : (
-                    <p className="text-white text-lg italic">{user?.name}</p>
-                  )}
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-white/60 text-xs font-bold uppercase tracking-wider mb-2 italic">
+                      First Name
+                    </label>
+                    {isEditingProfile ? (
+                      <input
+                        type="text"
+                        value={profileForm.first_name}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            first_name: e.target.value,
+                          })
+                        }
+                        className="w-full bg-dark border border-white/20 text-white px-4 py-3 rounded-[3px] outline-none focus:border-olive transition-all italic"
+                      />
+                    ) : (
+                      <p className="text-white text-lg italic">
+                        {user?.first_name}
+                      </p>
+                    )}
+                  </div>
 
-                <div>
-                  <label className="block text-white/60 text-xs font-bold uppercase tracking-wider mb-2 italic">
-                    Username
-                  </label>
-                  {isEditingProfile ? (
-                    <input
-                      type="text"
-                      value={profileForm.username}
-                      onChange={(e) =>
-                        setProfileForm({
-                          ...profileForm,
-                          username: e.target.value,
-                        })
-                      }
-                      className="w-full bg-dark border border-white/20 text-white px-4 py-3 rounded-[3px] outline-none focus:border-olive transition-all italic"
-                    />
-                  ) : (
-                    <p className="text-white text-lg italic">
-                      @{user?.username}
-                    </p>
-                  )}
+                  <div>
+                    <label className="block text-white/60 text-xs font-bold uppercase tracking-wider mb-2 italic">
+                      Last Name
+                    </label>
+                    {isEditingProfile ? (
+                      <input
+                        type="text"
+                        value={profileForm.last_name}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            last_name: e.target.value,
+                          })
+                        }
+                        className="w-full bg-dark border border-white/20 text-white px-4 py-3 rounded-[3px] outline-none focus:border-olive transition-all italic"
+                      />
+                    ) : (
+                      <p className="text-white text-lg italic">
+                        {user?.last_name}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -651,7 +674,7 @@ export default function AccountPage() {
 
               {/* Address List */}
               <div className="space-y-4">
-                {user && user.address && user.address.length === 0 ? (
+                {user && user.addresses && user.addresses.length === 0 ? (
                   <div className="text-center py-12">
                     <MapPin size={48} className="mx-auto text-white/20 mb-4" />
                     <p className="text-white/40 italic">
@@ -663,10 +686,10 @@ export default function AccountPage() {
                   </div>
                 ) : (
                   user &&
-                  user.address &&
-                  user.address.map((address) => (
+                  user.addresses &&
+                  user.addresses.map((address) => (
                     <div
-                      key={address._id}
+                      key={address.id}
                       className="bg-dark border border-white/10 rounded-[3px] p-5 hover:border-olive/50 transition-all"
                     >
                       <div className="flex items-start justify-between gap-4">
@@ -711,7 +734,7 @@ export default function AccountPage() {
                             <Edit2 size={16} />
                           </button>
                           <button
-                            onClick={() => handleDeleteAddress(address._id!)}
+                            onClick={() => handleDeleteAddress(address.id!)}
                             className="p-2 bg-red/20 text-red hover:bg-red hover:text-white rounded-[3px] transition-all"
                             title="Delete"
                           >

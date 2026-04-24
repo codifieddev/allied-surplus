@@ -20,6 +20,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Link } from "@/lib/router";
 import { cn } from "@/lib/utils";
 import HeroSection from "../sections/HeroSection";
+import { useAppSelector } from "@/lib/store/hooks";
 
 const trustItems = [
   {
@@ -77,7 +78,6 @@ export default function HomePage({ pageData }: { pageData: any }) {
     setToastVisible(true);
     setTimeout(() => setToastVisible(false), 3000);
   };
-
   const heroSection = pageData?.content?.find(
     (section: any) => section.adminTitle === "Hero",
   );

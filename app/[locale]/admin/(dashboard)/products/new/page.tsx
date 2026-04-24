@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { TacticalProductStudio } from "@/components/admin/products/TacticalProductStudio";
 
 export default function NewProductPage() {

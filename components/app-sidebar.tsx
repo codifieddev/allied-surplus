@@ -29,6 +29,7 @@ import {
   Cpu,
   BarChart3,
   Server,
+  Palette,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -76,6 +77,13 @@ const NAV_ITEMS = [
         label: "Branding",
         href: "/admin/branding",
         icon: Sparkles,
+        exact: false,
+        badge: null,
+      },
+      {
+        label: "Theme",
+        href: "/admin/theme",
+        icon: Palette,
         exact: false,
         badge: null,
       },

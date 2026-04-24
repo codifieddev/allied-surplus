@@ -13,7 +13,10 @@ export async function GET(req: NextRequest) {
   try {
     const Category = await getCategoryModel();
     const categories = await Category.find(query).toArray();
-    return NextResponse.json(categories);
+    return NextResponse.json({
+      message: "Categories fetched successfully",
+      data: categories,
+    });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

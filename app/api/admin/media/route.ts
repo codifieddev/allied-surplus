@@ -24,6 +24,15 @@ export async function POST(req: NextRequest) {
 
     let array: any[] = [];
 
+    const getFileType = (filename: string) => {
+      const ext = filename.split(".").pop()?.toLowerCase() || "";
+      if (["jpg", "jpeg", "png", "gif", "webp", "avif"].includes(ext)) return "image";
+      if (ext === "svg") return "svg";
+      if (ext === "pdf") return "pdf";
+      if (["woff", "woff2", "ttf", "otf"].includes(ext)) return "font";
+      return "other";
+    };
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const name = names[i] || `media-${Date.now()}-${file.name}`;
@@ -39,7 +48,7 @@ export async function POST(req: NextRequest) {
         foldername: foldername,
         url: `/uploads/${name}`,
         size: buffer.length,
-        type: "image",
+        type: getFileType(name),
         createdAt: new Date(),
         updatedAt: new Date(),
       });

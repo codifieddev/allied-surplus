@@ -26,6 +26,8 @@ import GetAllProducts from "@/lib/GetAllDetails/GetAllProducts";
 import GetCart from "@/lib/GetAllDetails/GetCart";
 import GetUser from "@/lib/GetAllDetails/GetUser";
 import GetAllForms from "@/lib/GetAllDetails/GetAllForms";
+import { getAuthUser } from "@/lib/getSingleUser";
+import { Toaster } from "sonner";
 
 const JWT_SECRET =
   process.env.JWT_SECRET || "default_jwt_secret_change_me_in_prod";
@@ -45,11 +47,18 @@ export default async function DashboardLayout({
 
   if (token) {
     try {
-      let check = jwt.verify(token, JWT_SECRET);
-      if (check) {
-        isAuthenticated = true;
-        user = jwt.decode(token);
+      user = await getAuthUser(token);
+      if (user?.role == "customer") {
+        redirect("/");
       }
+      if (user) {
+        isAuthenticated = true;
+      }
+      // let check = jwt.verify(token, JWT_SECRET);
+      // if (check) {
+      //   isAuthenticated = true;
+      //   user = jwt.decode(token);
+      // }
     } catch (e) {
       isAuthenticated = false;
     }
@@ -61,6 +70,7 @@ export default async function DashboardLayout({
 
   return (
     <>
+      <Toaster />
       <BrandingInitializer initialConfig={tenantRegistry} />
       <GetUser user={user} />
       <GetAllAttributes />

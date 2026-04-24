@@ -49,25 +49,22 @@ export function OptionConfiguration({
   }
 
   return (
-    <SectionCard
-      icon={<Layers size={18} />}
-      title="Configuration Matrix"
-    >
+    <SectionCard icon={<Layers size={18} />} title="Configuration Matrix">
       <div className="space-y-8">
         {/* Attribute Set Grid */}
         <div className="flex flex-wrap gap-2">
           {allattributes.map((set) => {
-            const active = attributeSetIds.includes(set.key || set._id);
+            const active = attributeSetIds.includes(set.key || set.id!);
             return (
               <button
                 type="button"
-                key={set._id}
-                onClick={() => onToggleAttributeSet(set.key || set._id)}
+                key={set.id}
+                onClick={() => onToggleAttributeSet(set.key || set.id!)}
                 className={cn(
                   "px-4 py-2 border transition-all text-[10px] font-black uppercase tracking-widest rounded-sm",
                   active
                     ? "bg-gold/10 border-gold/40 text-gold shadow-[0_0_15px_rgba(201,162,39,0.1)]"
-                    : "bg-ink border-white/10 text-white/40 hover:text-white hover:border-gold/20"
+                    : "bg-ink border-white/10 text-white/40 hover:text-white hover:border-gold/20",
                 )}
               >
                 {set.name}
@@ -91,7 +88,7 @@ export function OptionConfiguration({
                 const setId = opt.attributeSetId || "other";
                 if (!groups[setId]) {
                   const attributeSet = allattributes.find(
-                    (s) => (s.key || s._id) === setId,
+                    (s) => (s.key || s.id!) === setId,
                   );
                   groups[setId] = {
                     name: attributeSet?.name || "Global Assets",
@@ -125,7 +122,7 @@ export function OptionConfiguration({
                               IDENTIFIER: {opt.key}
                             </span>
                           </div>
-                          
+
                           <label className="flex items-center gap-3 cursor-pointer group">
                             <span className="text-[9px] font-black text-white/30 group-hover:text-white transition-colors uppercase tracking-widest italic">
                               Active for Variants
@@ -160,11 +157,14 @@ export function OptionConfiguration({
                                 type="button"
                                 key={val}
                                 onClick={() => {
-                                  const exists = opt.selectedValues.includes(val);
+                                  const exists =
+                                    opt.selectedValues.includes(val);
                                   onOptionChange(originalIdx, {
                                     ...opt,
                                     selectedValues: exists
-                                      ? opt.selectedValues.filter((v) => v !== val)
+                                      ? opt.selectedValues.filter(
+                                          (v) => v !== val,
+                                        )
                                       : [...opt.selectedValues, val],
                                   });
                                 }}
@@ -174,7 +174,8 @@ export function OptionConfiguration({
                                   selected
                                     ? "bg-gold border-gold text-black shadow-lg shadow-gold/20"
                                     : "bg-ink border-white/10 text-white/40 hover:text-white hover:border-white/20",
-                                  wasPrevSelected && "opacity-50 cursor-not-allowed border-dashed"
+                                  wasPrevSelected &&
+                                    "opacity-50 cursor-not-allowed border-dashed",
                                 )}
                               >
                                 {val}
@@ -222,14 +223,20 @@ export function OptionConfiguration({
               onClick={onRegenerateVariants}
               className="w-full flex items-center justify-center gap-3 py-4 bg-ink border border-dashed border-white/10 text-gold/60 font-black text-[10px] uppercase tracking-[0.3em] hover:bg-gold/5 hover:border-gold/40 hover:text-gold transition-all group"
             >
-              <Sparkles size={16} className="group-hover:rotate-12 transition-transform" />
+              <Sparkles
+                size={16}
+                className="group-hover:rotate-12 transition-transform"
+              />
               Re-Sync Matrix Logic
             </button>
           </div>
         ) : (
           <div className="py-16 flex flex-col items-center justify-center gap-6 bg-ink/20 border border-dashed border-white/5 rounded-sm opacity-30 group hover:opacity-50 transition-opacity">
             <div className="h-20 w-20 rounded-full border border-white/10 flex items-center justify-center bg-white/[0.02] shadow-inner">
-               <Zap size={40} className="text-white/20 group-hover:text-gold transition-colors" />
+              <Zap
+                size={40}
+                className="text-white/20 group-hover:text-gold transition-colors"
+              />
             </div>
             <div className="text-center">
               <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 leading-relaxed">

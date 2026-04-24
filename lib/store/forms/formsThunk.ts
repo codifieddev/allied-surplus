@@ -1,29 +1,48 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
+const tenantHeader = process.env.NEXT_PUBLIC_TENANT_ID;
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export const fetchForms = createAsyncThunk(
   "forms/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch("/api/ecommerce/forms");
+      const response = await fetch(`${API_BASE_URL}/forms`, {
+        headers: {
+          "Content-Type": "application/json",
+          "x-tenant-db": tenantHeader || "",
+        },
+        credentials: "include",
+      });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Failed to fetch forms");
       return data.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const saveForm = createAsyncThunk(
   "forms/save",
-  async ({ id, payload }: { id?: string; payload: any }, { rejectWithValue }) => {
+  async (
+    { id, payload }: { id?: string; payload: any },
+    { rejectWithValue },
+  ) => {
     try {
-      const endpoint = id ? `/api/ecommerce/forms?id=${id}` : "/api/ecommerce/forms";
+      const endpoint = id
+        ? `${API_BASE_URL}/forms?id=${id}`
+        : `${API_BASE_URL}/forms`;
       const method = id ? "PUT" : "POST";
 
       const response = await fetch(endpoint, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-tenant-db": tenantHeader || "",
+        },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -33,15 +52,20 @@ export const saveForm = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const deleteForm = createAsyncThunk(
   "forms/delete",
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/ecommerce/forms?id=${id}`, {
+      const response = await fetch(`${API_BASE_URL}/forms?id=${id}`, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "x-tenant-db": tenantHeader || "",
+        },
+        credentials: "include",
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Failed to delete form");
@@ -49,12 +73,15 @@ export const deleteForm = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const fetchSubmissions = createAsyncThunk(
   "forms/fetchSubmissions",
-  async ({ formId, productId }: { formId?: string; productId?: string } = {}, { rejectWithValue }) => {
+  async (
+    { formId, productId }: { formId?: string; productId?: string } = {},
+    { rejectWithValue },
+  ) => {
     try {
       let url = "/api/ecommerce/form-submissions";
       const params = new URLSearchParams();
@@ -64,12 +91,13 @@ export const fetchSubmissions = createAsyncThunk(
 
       const response = await fetch(url);
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to fetch submissions");
+      if (!response.ok)
+        throw new Error(data.error || "Failed to fetch submissions");
       return data.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const submitForm = createAsyncThunk(
@@ -88,5 +116,5 @@ export const submitForm = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );

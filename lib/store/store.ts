@@ -11,6 +11,7 @@ import attributesReducer from "./attributes/attributeSlices";
 import adminUsersReducer from "./users/userSlice";
 import adminFormsReducer from "./forms/formsSlice";
 import brandingReducer from "./branding/brandingSlice";
+import businessBlueprintReducer from "./businessBlueprints/businessBlueprintSlice";
 
 export const makeStore = () => {
   return configureStore({
@@ -27,6 +28,7 @@ export const makeStore = () => {
       adminUsers: adminUsersReducer,
       adminForms: adminFormsReducer,
       branding: brandingReducer,
+      businessBlueprint: businessBlueprintReducer,
     },
   });
 };
@@ -34,5 +36,5 @@ export const makeStore = () => {
 // Infer the type of makeStore
 export type AppStore = ReturnType<typeof makeStore>;
 // Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<AppStore['getState']>;
-export type AppDispatch = AppStore['dispatch'];
+export type RootState = ReturnType<AppStore["getState"]>;
+export type AppDispatch = AppStore["dispatch"];
