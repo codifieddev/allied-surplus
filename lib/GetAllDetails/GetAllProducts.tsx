@@ -18,7 +18,6 @@ export default function GetAllProducts() {
     if (!user) return;
 
     if (!hasFetched) {
-      console.log("Fetching products");
       dispatch(fetchProducts());
     }
   }, [user, hasFetched]);

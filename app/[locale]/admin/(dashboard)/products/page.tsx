@@ -50,7 +50,7 @@ function ProductsPageContent() {
   const dispatch = useAppDispatch();
   const router = useRouter();
 
-  const { allProducts: products, loading } = useAppSelector(
+  const { allProducts, loading } = useAppSelector(
     (state: RootState) => state.adminProducts,
   );
 
@@ -125,7 +125,7 @@ function ProductsPageContent() {
     }
   };
 
-  const filteredProducts = products.filter(
+  const filteredProducts = allProducts.filter(
     (p) =>
       p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.sku?.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -248,7 +248,7 @@ function ProductsPageContent() {
             ) : (
               filteredProducts.map((prod) => (
                 <TableRow
-                  key={prod._id}
+                  key={prod.id}
                   className="group border-white/5 hover:bg-white/[0.02] transition-all duration-300"
                 >
                   <TableCell className="px-8 py-6">
@@ -314,7 +314,7 @@ function ProductsPageContent() {
                       <button
                         className="h-10 w-10 rounded-sm border border-white/5 bg-white/[0.03] text-white/20 hover:text-gold hover:border-gold/30 hover:bg-gold/10 transition-all flex items-center justify-center group/btn shadow-xl active:scale-95"
                         onClick={() =>
-                          router.push(`/admin/products/${prod._id}/edit`)
+                          router.push(`/admin/products/${prod.id}/edit`)
                         }
                         title="Modify Asset"
                       >
@@ -325,9 +325,7 @@ function ProductsPageContent() {
                       </button>
                       <button
                         className="h-10 w-10 rounded-sm border border-white/5 bg-white/[0.03] text-white/20 hover:text-red hover:border-red/30 hover:bg-red/10 transition-all flex items-center justify-center group/btn shadow-xl active:scale-95"
-                        onClick={() =>
-                          handleDelete(String(prod._id), prod.name)
-                        }
+                        onClick={() => handleDelete(String(prod.id), prod.name)}
                         title="Decommission Asset"
                       >
                         <Trash

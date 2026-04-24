@@ -8,6 +8,7 @@ import {
   selectCartTotal,
   clearCart,
 } from "@/lib/store/cart/cartSlice";
+import { RootState } from "@/lib/store/store";
 import {
   ChevronLeft,
   CreditCard,
@@ -17,6 +18,8 @@ import {
   ArrowRight,
   MapPin,
   Wallet,
+  Plus,
+  Check,
 } from "lucide-react";
 import { Link } from "@/lib/router";
 
@@ -34,6 +37,13 @@ const CheckoutPage = () => {
   );
   const [shippingData, setShippingData] = useState<any>(null);
   const [billingData, setBillingData] = useState<any>(null);
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const [selectedShippingAddressId, setSelectedShippingAddressId] = useState<
+    string | null
+  >(null);
+  const [selectedBillingAddressId, setSelectedBillingAddressId] = useState<
+    string | null
+  >(null);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-IN", {
@@ -53,31 +63,72 @@ const CheckoutPage = () => {
     e.preventDefault();
     if (step === 1) {
       const formData = new FormData(e.currentTarget);
-      const ship = {
-        firstName: formData.get("shippingFirstName"),
-        lastName: formData.get("shippingLastName"),
-        phone: formData.get("shippingPhone"),
-        address1: formData.get("shippingAddress1"),
-        address2: formData.get("shippingAddress2"),
-        city: formData.get("shippingCity"),
-        state: formData.get("shippingState"),
-        pincode: formData.get("shippingPincode"),
-        country: formData.get("shippingCountry"),
-      };
+
+      let ship;
+      if (selectedShippingAddressId) {
+        const addr = user?.addresses?.find(
+          (a: any) => a.id === selectedShippingAddressId,
+        );
+        if (addr) {
+          ship = {
+            firstName: addr.firstName,
+            lastName: addr.lastName,
+            phone: addr.phone,
+            address1: addr.street,
+            address2: addr.addressLine2,
+            city: addr.city,
+            state: addr.state,
+            pincode: addr.zipCode,
+            country: addr.country,
+          };
+        }
+      } else {
+        ship = {
+          firstName: formData.get("shippingFirstName"),
+          lastName: formData.get("shippingLastName"),
+          phone: formData.get("shippingPhone"),
+          address1: formData.get("shippingAddress1"),
+          address2: formData.get("shippingAddress2"),
+          city: formData.get("shippingCity"),
+          state: formData.get("shippingState"),
+          pincode: formData.get("shippingPincode"),
+          country: formData.get("shippingCountry"),
+        };
+      }
       setShippingData(ship);
 
       if (isBillingDifferent) {
-        const bill = {
-          firstName: formData.get("billingFirstName"),
-          lastName: formData.get("billingLastName"),
-          phone: formData.get("billingPhone"),
-          address1: formData.get("billingAddress1"),
-          address2: formData.get("billingAddress2"),
-          city: formData.get("billingCity"),
-          state: formData.get("billingState"),
-          pincode: formData.get("billingPincode"),
-          country: formData.get("billingCountry"),
-        };
+        let bill;
+        if (selectedBillingAddressId) {
+          const addr = user?.addresses?.find(
+            (a: any) => a.id === selectedBillingAddressId,
+          );
+          if (addr) {
+            bill = {
+              firstName: addr.firstName,
+              lastName: addr.lastName,
+              phone: addr.phone,
+              address1: addr.street,
+              address2: addr.addressLine2,
+              city: addr.city,
+              state: addr.state,
+              pincode: addr.zipCode,
+              country: addr.country,
+            };
+          }
+        } else {
+          bill = {
+            firstName: formData.get("billingFirstName"),
+            lastName: formData.get("billingLastName"),
+            phone: formData.get("billingPhone"),
+            address1: formData.get("billingAddress1"),
+            address2: formData.get("billingAddress2"),
+            city: formData.get("billingCity"),
+            state: formData.get("billingState"),
+            pincode: formData.get("billingPincode"),
+            country: formData.get("billingCountry"),
+          };
+        }
         setBillingData(bill);
       } else {
         setBillingData(ship);
@@ -183,126 +234,243 @@ const CheckoutPage = () => {
 
   const renderAddressForm = (prefix: "shipping" | "billing") => {
     const data = prefix === "shipping" ? shippingData : billingData;
+    const selectedId =
+      prefix === "shipping"
+        ? selectedShippingAddressId
+        : selectedBillingAddressId;
+    const setSelectedId =
+      prefix === "shipping"
+        ? setSelectedShippingAddressId
+        : setSelectedBillingAddressId;
+
+    const savedAddresses = user?.addresses || [];
+    const selectedAddress = savedAddresses.find(
+      (a: any) => a.id === selectedId,
+    );
+
     return (
       <div className="flex flex-col gap-6">
-        <div className="grid sm:grid-cols-2 gap-6">
-          <div className="space-y-2">
+        {/* Saved Addresses Selection */}
+        {savedAddresses.length > 0 && (
+          <div className="space-y-4">
             <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
-              First Name *
+              Select Saved Address
             </label>
-            <input
-              required
-              type="text"
-              defaultValue={data?.firstName || ""}
-              name={`${prefix}FirstName`}
-              className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {savedAddresses.map((address: any) => (
+                <div
+                  key={address.id}
+                  onClick={() => setSelectedId(address.id)}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    selectedId === address.id
+                      ? "border-secondary bg-primary/5"
+                      : "border-border bg-surface hover:border-primary/30"
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-bold text-sm uppercase tracking-wider">
+                        {address.label}
+                      </p>
+                      <p className="text-xs font-semibold mt-1">
+                        {address.firstName} {address.lastName}
+                      </p>
+                      <p className="text-[10px] text-muted font-semibold line-clamp-1">
+                        {address.street}, {address.city}
+                      </p>
+                    </div>
+                    {selectedId === address.id && (
+                      <div className="w-5 h-5 bg-secondary text-white rounded-full flex items-center justify-center">
+                        <Check size={12} strokeWidth={4} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <div
+                onClick={() => setSelectedId(null)}
+                className={`p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all flex items-center justify-center gap-2 ${
+                  selectedId === null
+                    ? "border-secondary bg-primary/5"
+                    : "border-border hover:border-primary/30"
+                }`}
+              >
+                <Plus size={16} className="text-muted" />
+                <span className="text-xs font-bold uppercase tracking-wider text-muted">
+                  New Address
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
-              Last Name *
-            </label>
-            <input
-              required
-              type="text"
-              defaultValue={data?.lastName || ""}
-              name={`${prefix}LastName`}
-              className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
-            />
-          </div>
-        </div>
+        )}
 
-        <div className="grid sm:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
-              Phone *
-            </label>
-            <input
-              required
-              type="tel"
-              defaultValue={data?.phone || ""}
-              name={`${prefix}Phone`}
-              className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
-              Pincode *
-            </label>
-            <input
-              required
-              type="text"
-              defaultValue={data?.pincode || ""}
-              name={`${prefix}Pincode`}
-              className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
-            />
-          </div>
-        </div>
+        {selectedAddress ? (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-6 rounded-2xl bg-surface border-2 border-secondary/20 space-y-3 relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 p-3 opacity-10">
+              <MapPin size={40} />
+            </div>
+            <div className="flex justify-between items-center">
+              <h4 className="text-sm font-black uppercase tracking-wider text-secondary">
+                Selected: {selectedAddress.label}
+              </h4>
+              <button
+                type="button"
+                onClick={() => setSelectedId(null)}
+                className="text-[10px] font-black uppercase tracking-widest text-muted hover:text-primary transition-colors"
+              >
+                Change
+              </button>
+            </div>
+            <div className="space-y-1">
+              <p className="font-bold">
+                {selectedAddress.firstName} {selectedAddress.lastName}
+              </p>
+              <p className="text-sm font-semibold text-muted">
+                {selectedAddress.street}
+              </p>
+              {selectedAddress.addressLine2 && (
+                <p className="text-sm font-semibold text-muted">
+                  {selectedAddress.addressLine2}
+                </p>
+              )}
+              <p className="text-sm font-semibold text-muted">
+                {selectedAddress.city}, {selectedAddress.state}{" "}
+                {selectedAddress.zipCode}
+              </p>
+              <p className="text-sm font-semibold text-muted">
+                {selectedAddress.country}
+              </p>
+              <p className="text-sm font-bold text-secondary pt-1">
+                {selectedAddress.phone}
+              </p>
+            </div>
+          </motion.div>
+        ) : (
+          <div className="flex flex-col gap-6">
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
+                  First Name *
+                </label>
+                <input
+                  required
+                  type="text"
+                  defaultValue={data?.firstName || ""}
+                  name={`${prefix}FirstName`}
+                  className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
+                  Last Name *
+                </label>
+                <input
+                  required
+                  type="text"
+                  defaultValue={data?.lastName || ""}
+                  name={`${prefix}LastName`}
+                  className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
+                />
+              </div>
+            </div>
 
-        <div className="space-y-2">
-          <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
-            Address Line 1 *
-          </label>
-          <input
-            required
-            type="text"
-            defaultValue={data?.address1 || ""}
-            name={`${prefix}Address1`}
-            className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
-          />
-        </div>
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
+                  Phone *
+                </label>
+                <input
+                  required
+                  type="tel"
+                  defaultValue={data?.phone || ""}
+                  name={`${prefix}Phone`}
+                  className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
+                  Pincode *
+                </label>
+                <input
+                  required
+                  type="text"
+                  defaultValue={data?.pincode || ""}
+                  name={`${prefix}Pincode`}
+                  className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
+                />
+              </div>
+            </div>
 
-        <div className="space-y-2">
-          <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
-            Address Line 2
-          </label>
-          <input
-            type="text"
-            defaultValue={data?.address2 || ""}
-            name={`${prefix}Address2`}
-            className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
-          />
-        </div>
+            <div className="space-y-2">
+              <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
+                Address Line 1 *
+              </label>
+              <input
+                required
+                type="text"
+                defaultValue={data?.address1 || ""}
+                name={`${prefix}Address1`}
+                className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
+              />
+            </div>
 
-        <div className="grid sm:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
-              City *
-            </label>
-            <input
-              required
-              type="text"
-              defaultValue={data?.city || ""}
-              name={`${prefix}City`}
-              className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
-            />
+            <div className="space-y-2">
+              <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
+                Address Line 2
+              </label>
+              <input
+                type="text"
+                defaultValue={data?.address2 || ""}
+                name={`${prefix}Address2`}
+                className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
+              />
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
+                  City *
+                </label>
+                <input
+                  required
+                  type="text"
+                  defaultValue={data?.city || ""}
+                  name={`${prefix}City`}
+                  className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
+                  State *
+                </label>
+                <input
+                  required
+                  type="text"
+                  defaultValue={data?.state || ""}
+                  name={`${prefix}State`}
+                  className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
+                Country *
+              </label>
+              <input
+                required
+                type="text"
+                defaultValue={data?.country || "India"}
+                name={`${prefix}Country`}
+                className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
-              State *
-            </label>
-            <input
-              required
-              type="text"
-              defaultValue={data?.state || ""}
-              name={`${prefix}State`}
-              className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-[11px] font-black uppercase tracking-[2px] text-muted ml-1">
-            Country *
-          </label>
-          <input
-            required
-            type="text"
-            defaultValue={data?.country || "India"}
-            name={`${prefix}Country`}
-            className="w-full h-14 px-6 rounded-xl bg-surface border border-border outline-none focus:border-secondary transition-all font-semibold"
-          />
-        </div>
+        )}
       </div>
     );
   };

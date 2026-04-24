@@ -7,6 +7,8 @@ function serialize(obj: any) {
   return JSON.parse(JSON.stringify(obj));
 }
 
+const tenantHeader = process.env.NEXT_PUBLIC_TENANT_ID;
+
 export const getPageData = cache(async (slug: string) => {
   const db = await connectTenantDB();
   const page = await db.collection("pages").findOne({ slug });
@@ -60,4 +62,20 @@ export const getTenantRegistry = cache(async () => {
   const tenant = await tenantRegistry.findOne({ type: "branding" });
 
   return serialize(tenant);
+});
+
+
+export const getBusinessBlueprint = cache(async () => {
+  const tenantRegistry = await fetch(
+    "http://localhost:8000/platform/business-blueprint",
+    {
+      headers: {
+        "x-tenant-db": tenantHeader || "",
+      },
+      credentials: "include",
+    },
+  );
+  const data = await tenantRegistry.json();
+
+  return serialize(data.data);
 });

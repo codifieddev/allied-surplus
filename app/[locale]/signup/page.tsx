@@ -22,8 +22,8 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 
 export default function SignupPage() {
-  const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,9 +35,24 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      await dispatch(signupThunk({ name, username, email, password })).unwrap();
-      toast.success("Registration successful. Welcome to Allied Surplus!");
-      router.push("/login"); // Redirect to login after signup
+      const res = await dispatch(
+        signupThunk({
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          password,
+          tenant_slug: "allied-surplus",
+        }),
+      ).unwrap();
+      if (res.access_token) {
+        toast.success("Registration successful. Welcome to Allied Surplus!");
+        const session = res.session;
+        if (session.role == "customer") {
+          router.push("/login");
+        } else {
+          router.push("/login");
+        }
+      }
     } catch (err: any) {
       toast.error(err || "Registration error: Account could not be created.");
     } finally {
@@ -122,29 +137,29 @@ export default function SignupPage() {
           <form onSubmit={handleSignup} className="space-y-5">
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-black ml-1 flex items-center gap-2">
-                <User size={12} className="text-emerald-600" /> Full Name
+                <User size={12} className="text-emerald-600" /> First Name
               </label>
               <Input
                 type="text"
                 required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
                 className="!placeholder:text-black !placeholder:opacity-100 !placeholder:font-bold text-black h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic placeholder:font-normal"
-                placeholder="ENTER FULL NAME"
+                placeholder="ENTER FIRST NAME"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-black ml-1 flex items-center gap-2">
-                <Fingerprint size={12} className="text-emerald-600" /> Username
+                <User size={12} className="text-emerald-600" /> Last Name
               </label>
               <Input
                 type="text"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
                 className="!placeholder:text-black !placeholder:opacity-100 !placeholder:font-bold text-black h-12 bg-white border-slate-200 rounded-2xl focus-visible:ring-emerald-500/20 font-bold text-sm tracking-tight placeholder:italic placeholder:font-normal"
-                placeholder="ENTER USERNAME"
+                placeholder="ENTER LAST NAME"
               />
             </div>
 

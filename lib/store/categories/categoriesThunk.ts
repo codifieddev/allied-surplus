@@ -11,6 +11,10 @@ interface ApiResponse<T> {
   message?: string;
 }
 
+const tenantHeader = process.env.NEXT_PUBLIC_TENANT_ID;
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export const fetchCategories = createAsyncThunk<
   CategoryRecord[],
   { type?: string; includeCounts?: string } | void,
@@ -24,7 +28,13 @@ export const fetchCategories = createAsyncThunk<
         queryParams.set("includeCounts", params.includeCounts);
     }
     const res = await fetch(
-      `/api/ecommerce/categories?${queryParams.toString()}`,
+      `${API_BASE_URL}/commerce/categories?${queryParams.toString()}`,
+      {
+        headers: {
+          "x-tenant-db": tenantHeader || "",
+        },
+        credentials: "include",
+      },
     );
     const data = await res.json();
 
@@ -34,8 +44,8 @@ export const fetchCategories = createAsyncThunk<
         status: res.status,
       });
     }
-    // GET returns array directly for tree compatibility
-    return data;
+
+    return data.data;
   } catch (error: any) {
     return rejectWithValue({
       message: error?.message || "Something went wrong",
@@ -49,9 +59,13 @@ export const createCategory = createAsyncThunk<
   { rejectValue: ApiError }
 >("categories/createCategory", async (payload, { rejectWithValue }) => {
   try {
-    const res = await fetch("/api/ecommerce/categories", {
+    const res = await fetch(`${API_BASE_URL}/commerce/categories`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-tenant-db": tenantHeader || "",
+      },
+      credentials: "include",
       body: JSON.stringify(payload),
     });
     const data = await res.json();
@@ -75,9 +89,13 @@ export const updateCategory = createAsyncThunk<
   { rejectValue: ApiError }
 >("categories/updateCategory", async ({ id, payload }, { rejectWithValue }) => {
   try {
-    const res = await fetch(`/api/ecommerce/categories?id=${id}`, {
+    const res = await fetch(`${API_BASE_URL}/commerce/categories/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-tenant-db": tenantHeader || "",
+      },
+      credentials: "include",
       body: JSON.stringify(payload),
     });
     const data = await res.json();
@@ -101,8 +119,12 @@ export const deleteCategory = createAsyncThunk<
   { rejectValue: ApiError }
 >("categories/deleteCategory", async (id, { rejectWithValue }) => {
   try {
-    const res = await fetch(`/api/ecommerce/categories?id=${id}`, {
+    const res = await fetch(`${API_BASE_URL}/commerce/categories/${id}`, {
       method: "DELETE",
+      headers: {
+        "x-tenant-db": tenantHeader || "",
+      },
+      credentials: "include",
     });
     const data = await res.json();
     if (!res.ok) {
@@ -128,6 +150,7 @@ export const bulkImportCategories = createAsyncThunk<
     const res = await fetch("/api/ecommerce/categories/bulk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify(categories),
     });
     const data = await res.json();

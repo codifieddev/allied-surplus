@@ -170,7 +170,7 @@ function AttributesPageContent() {
 
   const handleEdit = (record: AttributeSetRecord) => {
     setForm(fromRecord(record));
-    setEditingId(record._id);
+    setEditingId(record.id as string);
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -208,7 +208,7 @@ function AttributesPageContent() {
       return;
     const tId = toast.loading("PURGING MATRIX...");
     try {
-      await dispatch(deleteAttributeSet(record._id)).unwrap();
+      await dispatch(deleteAttributeSet(record.id as string)).unwrap();
       toast.success("MATRIX PURGED", { id: tId });
       dispatch(fetchAttributes());
     } catch (err: any) {
@@ -515,7 +515,7 @@ function AttributesPageContent() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((record) => (
             <div
-              key={record._id}
+              key={record.id}
               className="bg-charcoal border border-white/5 p-6 space-y-4 hover:border-gold/30 transition-all group shadow-2xl shadow-black/40"
             >
               <div className="flex justify-between items-start">

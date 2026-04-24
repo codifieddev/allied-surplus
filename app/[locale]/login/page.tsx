@@ -27,10 +27,6 @@ export default function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
-  if (isAuthenticated) {
-    router.push("/");
-  }
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -39,13 +35,17 @@ export default function LoginPage() {
       await dispatch(loginThunk({ email, password })).unwrap();
       toast.success("Login successful. Welcome back!");
       router.push("/");
-      // router.refresh();
     } catch (err: any) {
       toast.error(err || "Login failed: Invalid email or password.");
     } finally {
       setLoading(false);
     }
   };
+
+  if (isAuthenticated) {
+    router.push("/");
+    
+  }
 
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row bg-slate-50 relative overflow-hidden">

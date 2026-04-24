@@ -14,6 +14,9 @@ import {
   Terminal,
   Database,
   Layers,
+  FileText,
+  Type,
+  File as FileIcon,
 } from "lucide-react";
 
 export const MediaUploader = ({
@@ -32,18 +35,30 @@ export const MediaUploader = ({
   const [selectedMedia, setSelectedMedia] = useState<any>(null);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
+  const getFileType = (filename: string) => {
+    const ext = filename.split(".").pop()?.toLowerCase() || "";
+    if (["jpg", "jpeg", "png", "gif", "webp", "avif"].includes(ext)) return "image";
+    if (ext === "svg") return "svg";
+    if (ext === "pdf") return "pdf";
+    if (["woff", "woff2", "ttf", "otf"].includes(ext)) return "font";
+    return "other";
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const files = Array.from(e.target.files);
-    const fileObjects = files.map((file: File) => ({
-      file,
-      filename: file.name,
-      alt: "",
-      preview: URL.createObjectURL(file),
-      size: (file.size / 1024).toFixed(0) + " KB",
-      foldername: "",
-      type: "image",
-    }));
+    const fileObjects = files.map((file: File) => {
+      const type = getFileType(file.name);
+      return {
+        file,
+        filename: file.name,
+        alt: "",
+        preview: (type === "image" || type === "svg") ? URL.createObjectURL(file) : null,
+        size: (file.size / 1024).toFixed(0) + " KB",
+        foldername: "",
+        type,
+      };
+    });
     setSelectedFiles([...selectedFiles, ...fileObjects]);
   };
 
@@ -51,15 +66,18 @@ export const MediaUploader = ({
     e.preventDefault();
     if (!e.dataTransfer.files) return;
     const files = Array.from(e.dataTransfer.files);
-    const fileObjects = files.map((file: File) => ({
-      file,
-      filename: file.name,
-      alt: "",
-      preview: URL.createObjectURL(file),
-      size: (file.size / 1024).toFixed(0) + " KB",
-      foldername: "",
-      type: "image",
-    }));
+    const fileObjects = files.map((file: File) => {
+      const type = getFileType(file.name);
+      return {
+        file,
+        filename: file.name,
+        alt: "",
+        preview: (type === "image" || type === "svg") ? URL.createObjectURL(file) : null,
+        size: (file.size / 1024).toFixed(0) + " KB",
+        foldername: "",
+        type,
+      };
+    });
     setSelectedFiles([...selectedFiles, ...fileObjects]);
   };
 
@@ -253,7 +271,7 @@ export const MediaUploader = ({
                     id="fileInput"
                     type="file"
                     multiple
-                    accept="image/*"
+                    accept="image/*,.svg,.pdf,.woff,.woff2,.ttf,.otf"
                     onChange={handleFileSelect}
                     className="hidden"
                   />
@@ -278,11 +296,21 @@ export const MediaUploader = ({
                         key={index}
                         className="bg-charcoal border border-charcoal-light p-4 flex gap-6"
                       >
-                        <img
-                          src={file.preview}
-                          alt=""
-                          className="w-24 h-24 object-cover border border-charcoal-light"
-                        />
+                        <div className="w-24 h-24 bg-ink border border-charcoal-light flex items-center justify-center overflow-hidden">
+                          {file.preview ? (
+                            <img
+                              src={file.preview}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="text-gold opacity-50">
+                                {file.type === "font" && <Type size={32} />}
+                                {file.type === "pdf" && <FileText size={32} />}
+                                {file.type === "other" && <FileIcon size={32} />}
+                            </div>
+                          )}
+                        </div>
                         <div className="flex-1 space-y-4">
                           <div className="flex justify-between items-start">
                             <div>
@@ -407,12 +435,23 @@ export const MediaUploader = ({
                     onClick={() => setSelectedMedia(item)}
                     className="group relative bg-charcoal border border-charcoal-light rounded-sm overflow-hidden cursor-pointer hover:border-gold transition-all"
                   >
-                    <div className="aspect-square bg-ink overflow-hidden border-b border-charcoal-light">
-                      <img
-                        src={item.url}
-                        alt={item.alt}
-                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                      />
+                    <div className="aspect-square bg-ink overflow-hidden border-b border-charcoal-light flex items-center justify-center">
+                      {item.type === "font" || item.type === "pdf" || item.type === "other" ? (
+                        <div className="flex flex-col items-center gap-2 text-gold/40 group-hover:text-gold transition-colors">
+                           {item.type === "font" && <Type size={40} />}
+                           {item.type === "pdf" && <FileText size={40} />}
+                           {item.type === "other" && <FileIcon size={40} />}
+                           <span className="text-[8px] font-black uppercase tracking-tighter opacity-50">
+                             {item.filename.split('.').pop()}
+                           </span>
+                        </div>
+                      ) : (
+                        <img
+                          src={item.url}
+                          alt={item.alt}
+                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                        />
+                      )}
                     </div>
                     <div className="p-3 bg-charcoal-dark">
                       <p className="text-[9px] font-black text-slate-200 uppercase tracking-widest truncate">
@@ -484,12 +523,23 @@ export const MediaUploader = ({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="bg-charcoal p-2 border border-charcoal-light">
-                    <img
-                      src={selectedMedia.url}
-                      alt=""
-                      className="w-full h-auto object-contain bg-ink"
-                    />
+                  <div className="bg-charcoal p-2 border border-charcoal-light min-h-[300px] flex items-center justify-center">
+                    {selectedMedia.type === "font" || selectedMedia.type === "pdf" || selectedMedia.type === "other" ? (
+                         <div className="flex flex-col items-center gap-4 text-gold">
+                            {selectedMedia.type === "font" && <Type size={80} />}
+                            {selectedMedia.type === "pdf" && <FileText size={80} />}
+                            {selectedMedia.type === "other" && <FileIcon size={80} />}
+                            <span className="text-xs font-black uppercase tracking-[0.4em] bg-gold/10 px-4 py-2 rounded-sm border border-gold/20">
+                                {selectedMedia.filename.split('.').pop()} FILE
+                            </span>
+                         </div>
+                    ) : (
+                      <img
+                        src={selectedMedia.url}
+                        alt=""
+                        className="w-full h-auto object-contain bg-ink"
+                      />
+                    )}
                   </div>
 
                   <div className="space-y-6">

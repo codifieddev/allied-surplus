@@ -54,7 +54,7 @@ const formsSlice = createSlice({
       // Save Form
       .addCase(saveForm.fulfilled, (state, action) => {
         const index = state.allForms.findIndex(
-          (f) => f._id === action.payload._id,
+          (f) => f.id === action.payload.id,
         );
         if (index !== -1) {
           state.allForms[index] = action.payload;
@@ -64,7 +64,7 @@ const formsSlice = createSlice({
       })
       // Delete Form
       .addCase(deleteForm.fulfilled, (state, action) => {
-        state.allForms = state.allForms.filter((f) => f._id !== action.payload);
+        state.allForms = state.allForms.filter((f) => f.id !== action.payload);
       })
       // Fetch Submissions
       .addCase(fetchSubmissions.pending, (state) => {

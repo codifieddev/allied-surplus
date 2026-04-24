@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
-  getAuthUserThunk,
   loginThunk,
   logoutThunk,
   signupThunk,
@@ -22,16 +21,18 @@ export type Address = {
   zipCode: string;
   country: string;
   isDefault?: boolean;
+  id?: string;
 };
 
 interface User {
-  username?: string;
   password?: string;
   role?: string;
   email?: string;
+  first_name?: string;
+  last_name?: string;
   id?: string;
   _id?: string;
-  address?: Address[];
+  addresses?: Address[];
   name?: string;
   wishlist?: ProductFormState[];
   isTenantOwner?: boolean;
@@ -48,7 +49,6 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-
   isAuthenticated: false,
   isLoading: false,
   error: null,
@@ -78,7 +78,7 @@ const authSlice = createSlice({
       state.isLoading = false;
     },
     updateAddress: (state, action: PayloadAction<Address[]>) => {
-      state.user!.address = action.payload;
+      state.user!.addresses = action.payload;
     },
     updateProfile: (state, action: PayloadAction<User>) => {
       state.user = { ...state.user, ...action.payload };
@@ -113,20 +113,6 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(signupThunk.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(getAuthUserThunk.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(getAuthUserThunk.fulfilled, (state, action: any) => {
-        state.user = action.payload.user;
-        state.isAuthenticated = true;
-        state.isLoading = false;
-        state.error = null;
-      })
-      .addCase(getAuthUserThunk.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })

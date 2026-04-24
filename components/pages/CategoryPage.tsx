@@ -377,6 +377,7 @@ const CategoryPage = () => {
   const filteredProducts = useMemo(() => {
     let result = allProducts;
 
+
     if (currentCategory != undefined && currentCategory.slug) {
       result = result.filter((p) =>
         p.categoryIds.includes(currentCategory!.slug),
@@ -559,7 +560,7 @@ const CategoryPage = () => {
                       .filter((cat: any) => cat.parentId == null)
                       .map((cat: any) => (
                         <Link
-                          key={cat._id}
+                          key={cat.id}
                           href={`/category/${cat.slug}`}
                           className={`flex justify-between items-center text-sm font-bold hover:text-secondary transition-colors ${
                             id === cat.slug ? "text-secondary" : "text-muted"
@@ -679,19 +680,19 @@ const CategoryPage = () => {
                     {filteredProducts.map((product) => {
                       const isWishlisted =
                         wishlistIds.find(
-                          (wishlist) => wishlist._id === product._id,
+                          (wishlist) => wishlist.id === product.id,
                         ) || null;
 
                       return (
-                        <div key={product._id} className="product-card group">
+                        <div key={product.id} className="product-card group">
                           {/* <div className="badge">{product.badge}</div> */}
                           <Link
                             href={`/product/${product.slug}`}
                             className="img-wrap block relative group"
                           >
                             <img
-                              src={product.gallery[0].url}
-                              alt={product.gallery[0].alt}
+                              src={product?.gallery?.[0]?.url}
+                              alt={product?.gallery?.[0]?.alt}
                             />
                             <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-100 transition-opacity duration-300">
                               <button

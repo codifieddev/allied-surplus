@@ -117,6 +117,8 @@ function CategoriesPageContent() {
 
   const dispatch = useAppDispatch();
 
+  console.log(form);
+
   const resetForm = () => {
     setForm(createDraft(typeFilter || "product"));
     setEditingId(null);
@@ -154,7 +156,7 @@ function CategoriesPageContent() {
 
   const openEdit = (record: CategoryRecord) => {
     setForm(toDraft(record));
-    setEditingId(record._id!);
+    setEditingId(record.id!);
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -198,7 +200,7 @@ function CategoriesPageContent() {
       return;
     const tId = toast.loading("PURGING HUB...");
     try {
-      await dispatch(deleteCategory(record._id!)).unwrap();
+      await dispatch(deleteCategory(record.id!)).unwrap();
       toast.success("HUB PURGED", { id: tId });
       dispatch(fetchCategories());
     } catch (err: any) {
@@ -236,7 +238,7 @@ function CategoriesPageContent() {
     const map = new Map<string, CategoryRecord & { children: any[] }>();
     const roots: any[] = [];
 
-    filteredCategories.forEach((c) => map.set(c._id, { ...c, children: [] }));
+    filteredCategories.forEach((c) => map.set(c.id!, { ...c, children: [] }));
 
     map.forEach((c) => {
       if (c.parentId && map.has(c.parentId)) {
@@ -252,12 +254,12 @@ function CategoriesPageContent() {
   const renderRows = (nodes: any[], depth: number = 0): React.ReactNode[] => {
     return nodes.flatMap((node) => {
       const hasChildren = node.children.length > 0;
-      const isExpanded = expandedNodes.has(node._id) || searchQuery.length > 0;
+      const isExpanded = expandedNodes.has(node.id) || searchQuery.length > 0;
       const name = node.name || node.title || "Unnamed Category";
 
       const row = (
         <TableRow
-          key={node._id}
+          key={node.id}
           className={`group border-white/5 hover:bg-white/[0.02] transition-all duration-300 ${depth > 0 ? "bg-ink/20" : ""}`}
         >
           <TableCell
@@ -267,7 +269,7 @@ function CategoriesPageContent() {
             <div className="flex items-center gap-4">
               {hasChildren ? (
                 <button
-                  onClick={(e) => toggleExpand(node._id, e)}
+                  onClick={(e) => toggleExpand(node.id, e)}
                   className={`flex items-center justify-center w-6 h-6 rounded-sm transition-all border ${isExpanded ? "bg-gold/10 border-gold text-gold" : "bg-ink border-white/10 text-white/20 hover:text-white"}`}
                 >
                   {isExpanded ? (
@@ -317,7 +319,7 @@ function CategoriesPageContent() {
             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 className="h-9 w-9 bg-charcoal border border-white/5 text-white/20 hover:text-gold hover:border-gold/30 transition-all flex items-center justify-center"
-                onClick={() => openCreate(node._id)}
+                onClick={() => openCreate(node.id)}
                 title="Deploy Sub-Node"
               >
                 <Plus size={16} />
@@ -525,9 +527,9 @@ function CategoriesPageContent() {
                 >
                   <option value="none">-- NO PARENT (ROOT HUB) --</option>
                   {categories
-                    .filter((c) => c.type === form.type && c._id !== editingId)
+                    .filter((c) => c.type === form.type && c.id !== editingId)
                     .map((c) => (
-                      <option key={c._id} value={c._id}>
+                      <option key={c.id} value={c.id}>
                         {c.name || c.title}
                       </option>
                     ))}

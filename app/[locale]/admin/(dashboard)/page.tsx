@@ -97,6 +97,7 @@ export default function AdminDashboard() {
 
   const { user } = useSelector((state: RootState) => state.auth);
 
+
   const mainLoading = categoryLoading && attributeLoading && loading;
 
   const stats = {
